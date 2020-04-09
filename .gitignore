@@ -5,3 +5,5 @@ Intermediate/
 *.sdf
 *.suo
 *.user
+*.log
+*.tlog
