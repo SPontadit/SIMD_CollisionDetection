@@ -1,0 +1,7 @@
+.vs/
+Build/
+Intermediate/
+
+*.sdf
+*.suo
+*.user
