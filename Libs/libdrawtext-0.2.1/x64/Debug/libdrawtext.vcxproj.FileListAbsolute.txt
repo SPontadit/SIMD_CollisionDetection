@@ -1,0 +1,2 @@
+C:\Users\Work\Projects\SIMDCollisionDetection\Libs\libdrawtext-0.2.1\x64\Debug\libdrawtext.lib
+C:\Users\Work\Projects\SIMDCollisionDetection\Libs\libdrawtext-0.2.1\x64\Debug\libdrawtext.pdb

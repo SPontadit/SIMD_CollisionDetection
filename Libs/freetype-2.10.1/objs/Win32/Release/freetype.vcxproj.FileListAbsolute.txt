@@ -1,0 +1,1 @@
+C:\Users\Work\Projects\freetype-2.10.1\objs\Win32\Release Static\freetype.lib
