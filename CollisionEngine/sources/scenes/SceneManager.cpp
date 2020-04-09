@@ -1,13 +1,13 @@
-#include "SceneManager.h"
+#include "scenes/SceneManager.h"
 
 #include <iostream>
 #include <string>
 
 #include "GlobalVariables.h"
-#include "PhysicEngine.h"
+#include "physics/PhysicEngine.h"
 #include "World.h"
-#include "RenderWindow.h"
-#include "Renderer.h"
+#include "render/RenderWindow.h"
+#include "render/Renderer.h"
 
 void CSceneManager::Reset()
 {

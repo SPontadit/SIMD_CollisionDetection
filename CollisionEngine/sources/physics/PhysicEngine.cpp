@@ -1,14 +1,14 @@
-#include "PhysicEngine.h"
+#include "physics/PhysicEngine.h"
 
 #include <iostream>
 #include <string>
 #include "GlobalVariables.h"
 #include "World.h"
-#include "Renderer.h" // for debugging only
+#include "render/Renderer.h" // for debugging only
 #include "Timer.h"
 
-#include "BroadPhase.h"
-#include "BroadPhaseBrut.h"
+#include "physics/BroadPhase.h"
+#include "physics/BroadPhaseBrut.h"
 
 
 void	CPhysicEngine::Reset()

@@ -2,7 +2,7 @@
 #include <GL/glu.h>
 
 
-#include "PhysicEngine.h"
+#include "physics/PhysicEngine.h"
 
 CPolygon::CPolygon(size_t index)
 	: m_vertexBufferId(0), m_index(index), density(0.1f)

@@ -95,7 +95,7 @@
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>$(SolutionDir)\Libs\SDL2-2.0.3\include;$(SolutionDir)\Libs\libdrawtext-0.2.1\src;$(SolutionDir)\Libs\glew\include;$(SolutionDir)\CollisionEngine;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>Headers\;$(SolutionDir)\Libs\SDL2-2.0.3\include;$(SolutionDir)\Libs\libdrawtext-0.2.1\src;$(SolutionDir)\Libs\glew\include;$(SolutionDir)\CollisionEngine;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -118,7 +118,7 @@ Xcopy "$(SolutionDir)Libs\glew\bin\Release\$(Platform)\glew32.dll" "$(OutputPath
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>$(SolutionDir)\Libs\SDL2-2.0.3\include;$(SolutionDir)\Libs\libdrawtext-0.2.1\src;$(SolutionDir)\Libs\glew\include;$(SolutionDir)\CollisionEngine;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>Headers\;$(SolutionDir)\Libs\SDL2-2.0.3\include;$(SolutionDir)\Libs\libdrawtext-0.2.1\src;$(SolutionDir)\Libs\glew\include;$(SolutionDir)\CollisionEngine;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -143,7 +143,7 @@ Xcopy "$(SolutionDir)Libs\glew\bin\Release\$(Platform)\glew32.dll" "$(OutputPath
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>$(SolutionDir)\Libs\SDL2-2.0.3\include;$(SolutionDir)\Libs\libdrawtext-0.2.1\src;$(SolutionDir)\Libs\glew\include;$(SolutionDir)\CollisionEngine;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>Headers\;$(SolutionDir)\Libs\SDL2-2.0.3\include;$(SolutionDir)\Libs\libdrawtext-0.2.1\src;$(SolutionDir)\Libs\glew\include;$(SolutionDir)\CollisionEngine;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -168,7 +168,7 @@ Xcopy "$(SolutionDir)Libs\glew\bin\Release\$(Platform)\glew32.dll" "$(OutputPath
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>$(SolutionDir)\Libs\SDL2-2.0.3\include;$(SolutionDir)\Libs\libdrawtext-0.2.1\src;$(SolutionDir)\Libs\glew\include;$(SolutionDir)\CollisionEngine;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>Headers\;$(SolutionDir)\Libs\SDL2-2.0.3\include;$(SolutionDir)\Libs\libdrawtext-0.2.1\src;$(SolutionDir)\Libs\glew\include;$(SolutionDir)\CollisionEngine;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -187,43 +187,43 @@ Xcopy "$(SolutionDir)Libs\glew\bin\Release\$(Platform)\glew32.dll" "$(OutputPath
     <Text Include="ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Application.h" />
-    <ClInclude Include="Behavior.h" />
-    <ClInclude Include="Behaviors\DisplayCollision.h" />
-    <ClInclude Include="Behaviors\PolygonMoverTool.h" />
-    <ClInclude Include="Behaviors\SimplePolygonBounce.h" />
-    <ClInclude Include="Behaviors\SphereSimulation.h" />
-    <ClInclude Include="BroadPhase.h" />
-    <ClInclude Include="BroadPhaseBrut.h" />
-    <ClInclude Include="GlobalVariables.h" />
-    <ClInclude Include="PhysicEngine.h" />
-    <ClInclude Include="Renderer.h" />
-    <ClInclude Include="RenderWindow.h" />
-    <ClInclude Include="SceneManager.h" />
-    <ClInclude Include="Scenes\BaseScene.h" />
-    <ClInclude Include="Scenes\SceneBouncingPolys.h" />
-    <ClInclude Include="Scenes\SceneDebugCollisions.h" />
-    <ClInclude Include="Scenes\SceneSpheres.h" />
-    <ClInclude Include="SDLRenderWindow.h" />
-    <ClInclude Include="World.h" />
-    <ClInclude Include="Maths.h" />
-    <ClInclude Include="Polygon.h" />
+    <ClInclude Include="headers\Application.h" />
+    <ClInclude Include="headers\behaviors\Behavior.h" />
+    <ClInclude Include="headers\behaviors\DisplayCollision.h" />
+    <ClInclude Include="headers\behaviors\PolygonMoverTool.h" />
+    <ClInclude Include="headers\behaviors\SimplePolygonBounce.h" />
+    <ClInclude Include="headers\behaviors\SphereSimulation.h" />
+    <ClInclude Include="headers\GlobalVariables.h" />
+    <ClInclude Include="headers\Maths.h" />
+    <ClInclude Include="headers\physics\BroadPhase.h" />
+    <ClInclude Include="headers\physics\BroadPhaseBrut.h" />
+    <ClInclude Include="headers\physics\PhysicEngine.h" />
+    <ClInclude Include="headers\Polygon.h" />
+    <ClInclude Include="headers\render\Renderer.h" />
+    <ClInclude Include="headers\render\RenderWindow.h" />
+    <ClInclude Include="headers\render\SDLRenderWindow.h" />
+    <ClInclude Include="headers\scenes\BaseScene.h" />
+    <ClInclude Include="headers\scenes\SceneBouncingPolys.h" />
+    <ClInclude Include="headers\scenes\SceneDebugCollisions.h" />
+    <ClInclude Include="headers\scenes\SceneManager.h" />
+    <ClInclude Include="headers\scenes\SceneSpheres.h" />
+    <ClInclude Include="headers\Timer.h" />
+    <ClInclude Include="headers\World.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
-    <ClInclude Include="Timer.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="main.cpp" />
-    <ClCompile Include="GlobaleVariables.cpp" />
-    <ClCompile Include="Maths.cpp" />
-    <ClCompile Include="PhysicEngine.cpp" />
-    <ClCompile Include="Polygon.cpp" />
-    <ClCompile Include="Renderer.cpp" />
-    <ClCompile Include="SceneManager.cpp" />
-    <ClCompile Include="SDLRenderWindow.cpp" />
-    <ClCompile Include="Timer.cpp" />
-    <ClCompile Include="stdafx.cpp" />
-    <ClCompile Include="World.cpp" />
+    <ClCompile Include="sources\GlobaleVariables.cpp" />
+    <ClCompile Include="sources\main.cpp" />
+    <ClCompile Include="sources\Maths.cpp" />
+    <ClCompile Include="sources\physics\PhysicEngine.cpp" />
+    <ClCompile Include="sources\Polygon.cpp" />
+    <ClCompile Include="sources\render\Renderer.cpp" />
+    <ClCompile Include="sources\render\SDLRenderWindow.cpp" />
+    <ClCompile Include="sources\scenes\SceneManager.cpp" />
+    <ClCompile Include="sources\stdafx.cpp" />
+    <ClCompile Include="sources\Timer.cpp" />
+    <ClCompile Include="sources\World.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

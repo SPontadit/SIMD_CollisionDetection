@@ -7,10 +7,10 @@
 #include <string>
 
 #include "Application.h"
-#include "SceneManager.h"
-#include "Scenes/SceneDebugCollisions.h"
-#include "Scenes/SceneBouncingPolys.h"
-#include "Scenes/SceneSpheres.h"
+#include "scenes/SceneManager.h"
+#include "scenes/SceneDebugCollisions.h"
+#include "scenes/SceneBouncingPolys.h"
+#include "scenes/SceneSpheres.h"
 
 
 /*

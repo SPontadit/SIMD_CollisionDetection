@@ -1,11 +1,11 @@
-#include "SDLRenderWindow.h"
+#include "render/SDLRenderWindow.h"
 
 #include <SDL.h>
 
 #include <GL/glew.h>
 
 #include "GlobalVariables.h"
-#include "Renderer.h"
+#include "render/Renderer.h"
 
 CSDLRenderWindow::CSDLRenderWindow(int width, int height) 
 	: CRenderWindow(width, height)

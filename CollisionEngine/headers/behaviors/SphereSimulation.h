@@ -2,9 +2,9 @@
 #define _SPHERE_SIMULATION_H_
 
 #include "Behavior.h"
-#include "PhysicEngine.h"
+#include "physics/PhysicEngine.h"
 #include "GlobalVariables.h"
-#include "Renderer.h"
+#include "render/Renderer.h"
 #include "World.h"
 
 #define RADIUS 2.0f

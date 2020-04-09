@@ -3,10 +3,10 @@
 
 #include "SceneManager.h"
 
-#include "Behavior.h"
-#include "PhysicEngine.h"
+#include "behaviors/Behavior.h"
+#include "physics/PhysicEngine.h"
 #include "GlobalVariables.h"
-#include "Renderer.h"
+#include "render/Renderer.h"
 #include "World.h"
 
 #include "Behaviors/PolygonMoverTool.h"

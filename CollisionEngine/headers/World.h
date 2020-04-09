@@ -4,7 +4,7 @@
 #include <vector>
 
 #include "Polygon.h"
-#include "Behavior.h"
+#include "behaviors/Behavior.h"
 
 struct SRandomPolyParams
 {

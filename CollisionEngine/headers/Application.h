@@ -2,10 +2,10 @@
 #define _APPLICATION_H_
 
 #include "GlobalVariables.h"
-#include "SDLRenderWindow.h"
-#include "PhysicEngine.h"
-#include "Renderer.h"
-#include "SceneManager.h"
+#include "render/SDLRenderWindow.h"
+#include "physics/PhysicEngine.h"
+#include "render/Renderer.h"
+#include "scenes/SceneManager.h"
 #include "World.h"
 
 void InitApplication(int width, int height, float worldHeight)

@@ -2,10 +2,10 @@
 #define _POLYGON_MOVER_TOOL_H_
 
 #include "Behavior.h"
-#include "PhysicEngine.h"
+#include "physics/PhysicEngine.h"
 #include "GlobalVariables.h"
-#include "Renderer.h"
-#include "RenderWindow.h"
+#include "render/Renderer.h"
+#include "render/RenderWindow.h"
 #include "World.h"
 
 class CPolygonMoverTool : public CBehavior
