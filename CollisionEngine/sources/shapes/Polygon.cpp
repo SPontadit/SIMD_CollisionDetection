@@ -1,4 +1,4 @@
-#include "Polygon.h"
+#include "shapes/Polygon.h"
 #include <GL/glu.h>
 
 

@@ -3,7 +3,7 @@
 
 #include "BroadPhase.h"
 
-#include "Polygon.h"
+#include "shapes/Polygon.h"
 #include "GlobalVariables.h"
 #include "World.h"
 

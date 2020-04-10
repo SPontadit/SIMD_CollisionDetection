@@ -1,7 +1,7 @@
 #ifndef _BEHAVIOR_H_
 #define _BEHAVIOR_H_
 
-#include "Polygon.h"
+#include "shapes/Polygon.h"
 
 class CBehavior
 {

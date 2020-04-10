@@ -8,7 +8,7 @@
 #include "GlobalVariables.h"
 #include "render/Renderer.h"
 #include "render/RenderWindow.h"
-#include "Polygon.h"
+#include "shapes/Polygon.h"
 #include "physics/PhysicEngine.h"
 #include "scenes/SceneManager.h"
 #include "World.h"

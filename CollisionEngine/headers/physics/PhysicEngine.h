@@ -4,7 +4,7 @@
 #include <vector>
 #include <unordered_map>
 #include "Maths.h"
-#include "Polygon.h"
+#include "shapes/Polygon.h"
 
 class IBroadPhase;
 

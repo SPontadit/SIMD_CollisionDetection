@@ -3,7 +3,7 @@
 
 #include <vector>
 
-#include "Polygon.h"
+#include "shapes/Polygon.h"
 #include "behaviors/Behavior.h"
 
 struct SRandomPolyParams

@@ -1,6 +1,6 @@
 #include "World.h"
 
-#include "Polygon.h"
+#include "shapes/Polygon.h"
 
 CPolygonPtr		CWorld::AddTriangle(float base, float height)
 {
