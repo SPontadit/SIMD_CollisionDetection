@@ -34,7 +34,7 @@ void CPolygon::Draw()
 
 	// Draw vertices
 	BindBuffers();
-	glDrawArrays(GL_LINE_LOOP, 0, points.size());
+	glDrawArrays(GL_LINE_LOOP, 0, pointCount);
 	glDisableClientState(GL_VERTEX_ARRAY);
 
 	glPopMatrix();
@@ -78,18 +78,18 @@ void CPolygon::CreateBuffers()
 {
 	DestroyBuffers();
 
-	float* vertices = new float[3 * points.size()];
-	for (size_t i = 0; i < points.size(); ++i)
+	float* vertices = new float[3 * pointCount];
+	for (size_t i = 0; i < pointCount; ++i)
 	{
-		vertices[3 * i] = points[i].x;
-		vertices[3 * i + 1] = points[i].y;
+		vertices[3 * i] = pointsX[i];
+		vertices[3 * i + 1] = pointsY[i];
 		vertices[3 * i + 2] = 0.0f;
 	}
 
 	glGenBuffers(1, &m_vertexBufferId);
 
 	glBindBuffer(GL_ARRAY_BUFFER, m_vertexBufferId);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(float) * 3 * points.size(), vertices, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(float) * 3 * pointCount, vertices, GL_STATIC_DRAW);
 
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 
@@ -119,10 +119,12 @@ void CPolygon::DestroyBuffers()
 
 void CPolygon::BuildLines()
 {
-	for (size_t index = 0; index < points.size(); ++index)
+	for (size_t index = 0; index < pointCount; ++index)
 	{
-		const Vec2& pointA = points[index];
-		const Vec2& pointB = points[(index + 1) % points.size()];
+		int next = (index + 1) % pointCount;
+
+		Vec2 pointA(pointsX[index], pointsY[index]);
+		Vec2 pointB(pointsX[next], pointsY[next]);
 
 		Vec2 lineDir = (pointA - pointB).Normalized();
 

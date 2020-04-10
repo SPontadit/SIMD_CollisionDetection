@@ -193,7 +193,7 @@ struct Line
 	Vec2 point, dir;
 
 	Line() = default;
-	Line(Vec2 _point, Vec2 _dir) : point(_point), dir(_dir){}
+	Line(const Vec2& _point, const Vec2& _dir) : point(_point), dir(_dir){}
 
 	Vec2	GetNormal() const
 	{

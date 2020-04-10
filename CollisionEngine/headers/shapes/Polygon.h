@@ -19,7 +19,10 @@ public:
 
 	Vec2				position;
 	Mat2				rotation;
-	std::vector<Vec2>	points;
+	//std::vector<Vec2>	points;
+	float*				pointsX;
+	float*				pointsY;
+	size_t				pointCount;
 
 	void				Build();
 	void				Draw();

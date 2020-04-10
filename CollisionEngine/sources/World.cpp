@@ -5,9 +5,19 @@
 CPolygonPtr		CWorld::AddTriangle(float base, float height)
 {
 	CPolygonPtr poly = AddPolygon();
-	poly->points.push_back({ -base * 0.5f, -height * 0.5f });
-	poly->points.push_back({ base * 0.5f, -height * 0.5f });
-	poly->points.push_back({ 0.0f, height * 0.5f });
+
+	poly->pointCount = 3;
+	poly->pointsX = new float[3];
+	poly->pointsY = new float[3];
+
+	poly->pointsX[0] = -base * 0.5f;
+	poly->pointsX[1] = base * 0.5f;
+	poly->pointsX[2] = 0.0f;
+
+	poly->pointsY[0] = -height * 0.5f;
+	poly->pointsY[1] = -height * 0.5f;
+	poly->pointsY[2] = height * 0.5f;
+
 	poly->Build();
 
 	return poly;
@@ -16,10 +26,21 @@ CPolygonPtr		CWorld::AddTriangle(float base, float height)
 CPolygonPtr		CWorld::AddRectangle(float width, float height)
 {
 	CPolygonPtr poly = AddPolygon();
-	poly->points.push_back({ -width * 0.5f, -height * 0.5f });
-	poly->points.push_back({ width * 0.5f, -height * 0.5f });
-	poly->points.push_back({ width * 0.5f, height * 0.5f });
-	poly->points.push_back({ -width * 0.5f, height * 0.5f });
+
+	poly->pointCount = 4;
+	poly->pointsX = new float[4];
+	poly->pointsY = new float[4];
+
+	poly->pointsX[0] = -width * 0.5f;
+	poly->pointsX[1] = width * 0.5f;
+	poly->pointsX[2] = width * 0.5f;
+	poly->pointsX[3] = -width * 0.5f;
+
+	poly->pointsY[0] = -height * 0.5f;
+	poly->pointsY[1] = -height * 0.5f;
+	poly->pointsY[2] = height * 0.5f;
+	poly->pointsY[3] = height * 0.5f;
+
 	poly->Build();
 
 	return poly;
@@ -33,13 +54,17 @@ CPolygonPtr		CWorld::AddSquare(float size)
 CPolygonPtr		CWorld::AddSymetricPolygon(float radius, size_t sides)
 {
 	CPolygonPtr poly = AddPolygon();
+	poly->pointCount = sides;
+	poly->pointsX = new float[sides];
+	poly->pointsY = new float[sides];
+
 	float dAngle = 360.0f / (float)sides;
 	for (size_t i = 0; i < sides; ++i)
 	{
 		float angle = i * dAngle;
 
-		Vec2 point = Vec2(cosf(DEG2RAD(angle)), sinf(DEG2RAD(angle))) * radius;
-		poly->points.push_back(point);
+		poly->pointsX[i] = cosf(DEG2RAD(angle));
+		poly->pointsY[i] = sinf(DEG2RAD(angle));
 	}
 	poly->Build();
 
@@ -48,18 +73,21 @@ CPolygonPtr		CWorld::AddSymetricPolygon(float radius, size_t sides)
 
 CPolygonPtr		CWorld::AddRandomPoly(const SRandomPolyParams& params)
 {
-	size_t pointsCount = (size_t)Random(params.minPoints, params.maxPoints);
+	CPolygonPtr poly = AddPolygon();
+
+	poly->pointCount = (size_t)Random(params.minPoints, params.maxPoints);
+	poly->pointsX = new float[poly->pointCount];
+	poly->pointsY = new float[poly->pointCount];
+
 	float radius = Random(params.minRadius, params.maxRadius);
 
-	CPolygonPtr poly = AddPolygon();
-	float dAngle = 360.0f / (float)pointsCount;
-	for (size_t i = 0; i < pointsCount; ++i)
+	float dAngle = 360.0f / (float)poly->pointCount;
+	for (size_t i = 0; i < poly->pointCount; ++i)
 	{
 		float angle = i * dAngle + Random(-dAngle / 3.0f, dAngle / 3.0f);
-		float dist = radius;
 
-		Vec2 point = Vec2(cosf(DEG2RAD(angle)), sinf(DEG2RAD(angle))) * dist;
-		poly->points.push_back(point);
+		poly->pointsX[i] = cosf(DEG2RAD(angle)) * radius;
+		poly->pointsY[i] = sinf(DEG2RAD(angle)) * radius;
 	}
 
 	poly->Build();
