@@ -3,6 +3,7 @@
 
 #include <cfloat>
 #include "Maths.h"
+#include <xmmintrin.h>
 
 struct AABB
 {
@@ -12,7 +13,13 @@ struct AABB
     constexpr AABB(const Vec2& minimum, const Vec2& maximum)
         : minimum(minimum), maximum(maximum) { }
 
-    Vec2 minimum, maximum;
+    constexpr explicit AABB(const __m128 reg)
+        : reg(reg) { }
+
+    union {
+        struct { Vec2 minimum, maximum; };
+        __m128 reg;
+    };
 };
 
 #endif
