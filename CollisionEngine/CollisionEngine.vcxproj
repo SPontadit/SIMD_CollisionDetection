@@ -198,7 +198,6 @@ Xcopy "$(SolutionDir)Libs\glew\bin\Release\$(Platform)\glew32.dll" "$(OutputPath
     <ClInclude Include="headers\physics\BroadPhase.h" />
     <ClInclude Include="headers\physics\BroadPhaseBrut.h" />
     <ClInclude Include="headers\physics\PhysicEngine.h" />
-    <ClInclude Include="headers\Polygon.h" />
     <ClInclude Include="headers\render\Renderer.h" />
     <ClInclude Include="headers\render\RenderWindow.h" />
     <ClInclude Include="headers\render\SDLRenderWindow.h" />
@@ -207,6 +206,7 @@ Xcopy "$(SolutionDir)Libs\glew\bin\Release\$(Platform)\glew32.dll" "$(OutputPath
     <ClInclude Include="headers\scenes\SceneDebugCollisions.h" />
     <ClInclude Include="headers\scenes\SceneManager.h" />
     <ClInclude Include="headers\scenes\SceneSpheres.h" />
+    <ClInclude Include="headers\shapes\Polygon.h" />
     <ClInclude Include="headers\Timer.h" />
     <ClInclude Include="headers\World.h" />
     <ClInclude Include="stdafx.h" />
@@ -217,10 +217,10 @@ Xcopy "$(SolutionDir)Libs\glew\bin\Release\$(Platform)\glew32.dll" "$(OutputPath
     <ClCompile Include="sources\main.cpp" />
     <ClCompile Include="sources\Maths.cpp" />
     <ClCompile Include="sources\physics\PhysicEngine.cpp" />
-    <ClCompile Include="sources\Polygon.cpp" />
     <ClCompile Include="sources\render\Renderer.cpp" />
     <ClCompile Include="sources\render\SDLRenderWindow.cpp" />
     <ClCompile Include="sources\scenes\SceneManager.cpp" />
+    <ClCompile Include="sources\shapes\Polygon.cpp" />
     <ClCompile Include="sources\stdafx.cpp" />
     <ClCompile Include="sources\Timer.cpp" />
     <ClCompile Include="sources\World.cpp" />

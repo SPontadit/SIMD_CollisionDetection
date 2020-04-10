@@ -32,6 +32,12 @@
     <Filter Include="Sources\Scenes">
       <UniqueIdentifier>{5ef54ced-7599-4d41-b13a-f7b548f791d7}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Headers\Shapes">
+      <UniqueIdentifier>{d8eaf0bd-821e-4786-b2f3-f5f6722e17c8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Sources\Shapes">
+      <UniqueIdentifier>{e77ff64b-380c-4ad5-80f9-07c6344fd3a2}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Text Include="ReadMe.txt" />
@@ -44,9 +50,6 @@
       <Filter>Headers</Filter>
     </ClInclude>
     <ClInclude Include="headers\Maths.h">
-      <Filter>Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="headers\Polygon.h">
       <Filter>Headers</Filter>
     </ClInclude>
     <ClInclude Include="headers\Timer.h">
@@ -109,6 +112,9 @@
     <ClInclude Include="targetver.h">
       <Filter>Headers</Filter>
     </ClInclude>
+    <ClInclude Include="headers\shapes\Polygon.h">
+      <Filter>Headers\Shapes</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="sources\scenes\SceneManager.cpp">
@@ -132,9 +138,6 @@
     <ClCompile Include="sources\Maths.cpp">
       <Filter>Sources</Filter>
     </ClCompile>
-    <ClCompile Include="sources\Polygon.cpp">
-      <Filter>Sources</Filter>
-    </ClCompile>
     <ClCompile Include="sources\stdafx.cpp">
       <Filter>Sources</Filter>
     </ClCompile>
@@ -143,6 +146,9 @@
     </ClCompile>
     <ClCompile Include="sources\World.cpp">
       <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="sources\shapes\Polygon.cpp">
+      <Filter>Sources\Shapes</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
