@@ -1,8 +1,9 @@
 #include "shapes/Polygon.h"
+
 #include <GL/glu.h>
 
-
 #include "physics/PhysicEngine.h"
+#include "shapes/AABB.h"
 
 CPolygon::CPolygon(size_t index)
 	: m_vertexBufferId(0), m_index(index), density(0.1f)
@@ -131,5 +132,3 @@ void CPolygon::BuildLines()
 		m_lines.push_back(Line(pointB, lineDir));
 	}
 }
-
-

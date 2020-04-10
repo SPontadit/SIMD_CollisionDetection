@@ -40,9 +40,9 @@ struct Vec2
 {
 	float x, y;
 
-	Vec2() : x(0.0f), y(0.0f){}
+	constexpr Vec2() : x(0.0f), y(0.0f){}
 
-	Vec2(float _x, float _y) : x(_x), y(_y){}
+	constexpr Vec2(float _x, float _y) : x(_x), y(_y){}
 
 	Vec2 operator+(const Vec2& rhs) const
 	{

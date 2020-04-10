@@ -6,19 +6,24 @@ CPolygonPtr		CWorld::AddTriangle(float base, float height)
 {
 	CPolygonPtr poly = AddPolygon();
 
+	const float halfBase = fabs(base) * 0.5f;
+	const float halfHeight = fabs(height) * 0.5f;
+
 	poly->pointCount = 3;
 	poly->pointsX = new float[3];
 	poly->pointsY = new float[3];
 
-	poly->pointsX[0] = -base * 0.5f;
-	poly->pointsX[1] = base * 0.5f;
+	poly->pointsX[0] = -halfBase;
+	poly->pointsX[1] = halfBase;
 	poly->pointsX[2] = 0.0f;
 
-	poly->pointsY[0] = -height * 0.5f;
-	poly->pointsY[1] = -height * 0.5f;
-	poly->pointsY[2] = height * 0.5f;
+	poly->pointsY[0] = -halfHeight;
+	poly->pointsY[1] = -halfHeight;
+	poly->pointsY[2] = halfHeight;
 
 	poly->Build();
+
+	m_localAABBs.push_back(AABB({ -halfBase, -halfHeight }, {halfBase, halfHeight}));
 
 	return poly;
 }
@@ -27,21 +32,26 @@ CPolygonPtr		CWorld::AddRectangle(float width, float height)
 {
 	CPolygonPtr poly = AddPolygon();
 
+	const float halfWidth  = fabs(width) * 0.5f;
+	const float halfHeight = fabs(height) * 0.5f;
+
 	poly->pointCount = 4;
 	poly->pointsX = new float[4];
 	poly->pointsY = new float[4];
 
-	poly->pointsX[0] = -width * 0.5f;
-	poly->pointsX[1] = width * 0.5f;
-	poly->pointsX[2] = width * 0.5f;
-	poly->pointsX[3] = -width * 0.5f;
+	poly->pointsX[0] = -halfWidth;
+	poly->pointsX[1] = halfWidth;
+	poly->pointsX[2] = halfWidth;
+	poly->pointsX[3] = -halfWidth;
 
-	poly->pointsY[0] = -height * 0.5f;
-	poly->pointsY[1] = -height * 0.5f;
-	poly->pointsY[2] = height * 0.5f;
-	poly->pointsY[3] = height * 0.5f;
+	poly->pointsY[0] = -halfHeight;
+	poly->pointsY[1] = -halfHeight;
+	poly->pointsY[2] = halfHeight;
+	poly->pointsY[3] = halfHeight;
 
 	poly->Build();
+
+	m_localAABBs.push_back(AABB({ -halfWidth, -halfHeight}, {halfWidth, halfHeight}));
 
 	return poly;
 }
@@ -63,10 +73,12 @@ CPolygonPtr		CWorld::AddSymetricPolygon(float radius, size_t sides)
 	{
 		float angle = i * dAngle;
 
-		poly->pointsX[i] = cosf(DEG2RAD(angle));
-		poly->pointsY[i] = sinf(DEG2RAD(angle));
+		poly->pointsX[i] = cosf(DEG2RAD(angle)) * radius;
+		poly->pointsY[i] = sinf(DEG2RAD(angle)) * radius;
 	}
 	poly->Build();
+
+	m_localAABBs.push_back(AABB({ -radius, -radius }, { radius, radius }));
 
 	return poly;
 }
@@ -99,6 +111,8 @@ CPolygonPtr		CWorld::AddRandomPoly(const SRandomPolyParams& params)
 	rot.SetAngle(Random(-180.0f, 180.0f));
 	poly->speed = rot.X * Random(params.minSpeed, params.maxSpeed);
 
+	m_localAABBs.push_back(AABB({ -radius, -radius }, { radius, radius }));
+
 	return poly;
 }
 
@@ -118,6 +132,11 @@ void	CWorld::RemovePolygon(CPolygonPtr poly)
 		CPolygonPtr movedPoly = m_polygons[m_polygons.size() - 1];
 		m_polygons[index] = movedPoly;
 		movedPoly->m_index = index;
+
+		m_localAABBs[index] = m_localAABBs[m_localAABBs.size() - 1];
+
+		m_polygons.pop_back();
+		m_localAABBs.pop_back();
 	}
 }
 

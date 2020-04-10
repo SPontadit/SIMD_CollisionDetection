@@ -115,6 +115,9 @@
     <ClInclude Include="headers\shapes\Polygon.h">
       <Filter>Headers\Shapes</Filter>
     </ClInclude>
+    <ClInclude Include="headers\shapes\AABB.h">
+      <Filter>Headers\Shapes</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="sources\scenes\SceneManager.cpp">
@@ -148,6 +151,9 @@
       <Filter>Sources</Filter>
     </ClCompile>
     <ClCompile Include="sources\shapes\Polygon.cpp">
+      <Filter>Sources\Shapes</Filter>
+    </ClCompile>
+    <ClCompile Include="sources\shapes\AABB.cpp">
       <Filter>Sources\Shapes</Filter>
     </ClCompile>
   </ItemGroup>

@@ -96,6 +96,7 @@
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
       <AdditionalIncludeDirectories>Headers\;$(SolutionDir)\Libs\SDL2-2.0.3\include;$(SolutionDir)\Libs\libdrawtext-0.2.1\src;$(SolutionDir)\Libs\glew\include;$(SolutionDir)\CollisionEngine;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <LanguageStandard>Default</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -119,6 +120,7 @@ Xcopy "$(SolutionDir)Libs\glew\bin\Release\$(Platform)\glew32.dll" "$(OutputPath
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
       <AdditionalIncludeDirectories>Headers\;$(SolutionDir)\Libs\SDL2-2.0.3\include;$(SolutionDir)\Libs\libdrawtext-0.2.1\src;$(SolutionDir)\Libs\glew\include;$(SolutionDir)\CollisionEngine;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <LanguageStandard>Default</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -144,6 +146,7 @@ Xcopy "$(SolutionDir)Libs\glew\bin\Release\$(Platform)\glew32.dll" "$(OutputPath
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
       <AdditionalIncludeDirectories>Headers\;$(SolutionDir)\Libs\SDL2-2.0.3\include;$(SolutionDir)\Libs\libdrawtext-0.2.1\src;$(SolutionDir)\Libs\glew\include;$(SolutionDir)\CollisionEngine;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <LanguageStandard>Default</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -169,6 +172,7 @@ Xcopy "$(SolutionDir)Libs\glew\bin\Release\$(Platform)\glew32.dll" "$(OutputPath
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
       <AdditionalIncludeDirectories>Headers\;$(SolutionDir)\Libs\SDL2-2.0.3\include;$(SolutionDir)\Libs\libdrawtext-0.2.1\src;$(SolutionDir)\Libs\glew\include;$(SolutionDir)\CollisionEngine;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <LanguageStandard>Default</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -206,6 +210,7 @@ Xcopy "$(SolutionDir)Libs\glew\bin\Release\$(Platform)\glew32.dll" "$(OutputPath
     <ClInclude Include="headers\scenes\SceneDebugCollisions.h" />
     <ClInclude Include="headers\scenes\SceneManager.h" />
     <ClInclude Include="headers\scenes\SceneSpheres.h" />
+    <ClInclude Include="headers\shapes\AABB.h" />
     <ClInclude Include="headers\shapes\Polygon.h" />
     <ClInclude Include="headers\Timer.h" />
     <ClInclude Include="headers\World.h" />
@@ -220,6 +225,7 @@ Xcopy "$(SolutionDir)Libs\glew\bin\Release\$(Platform)\glew32.dll" "$(OutputPath
     <ClCompile Include="sources\render\Renderer.cpp" />
     <ClCompile Include="sources\render\SDLRenderWindow.cpp" />
     <ClCompile Include="sources\scenes\SceneManager.cpp" />
+    <ClCompile Include="sources\shapes\AABB.cpp" />
     <ClCompile Include="sources\shapes\Polygon.cpp" />
     <ClCompile Include="sources\stdafx.cpp" />
     <ClCompile Include="sources\Timer.cpp" />
