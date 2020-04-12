@@ -2,6 +2,7 @@
 #define _RENDERER_H_
 
 #include <vector>
+#include <string>
 
 #include "Timer.h"
 #include "Maths.h"

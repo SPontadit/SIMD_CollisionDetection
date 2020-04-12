@@ -3,7 +3,7 @@
 
 #include <cfloat>
 #include "Maths.h"
-#include <xmmintrin.h>
+#include <smmintrin.h>
 
 struct AABB
 {
@@ -20,6 +20,10 @@ struct AABB
         struct { Vec2 minimum, maximum; };
         __m128 reg;
     };
+
+    AABB Transform(Vec2 position, Mat2 rotation) const noexcept;
+
+    static void Draw(const AABB& A) noexcept;
 };
 
 #endif

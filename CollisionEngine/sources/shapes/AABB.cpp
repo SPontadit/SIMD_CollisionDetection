@@ -1,5 +1,8 @@
 #include "shapes/AABB.h"
 
+#include "GlobalVariables.h"
+#include "render/Renderer.h"
+
 /**
         X      Y
 m = x cos a  -sin a
@@ -52,8 +55,6 @@ else
    B.max.x += e0;
 }
 
-
-
 **/
 
 /**
@@ -69,35 +70,41 @@ R = shuffle R B
 
 R = B B B B
 
-
-
-
-
 **/
 
-
-
-
-
-#include <immintrin.h>
-
-AABB Transform(const AABB& A, Mat2 rotMat)
+AABB AABB::Transform(Vec2 position, Mat2 rotation) const noexcept
 {
-    __m128 min = _mm_set_ps(A.minimum.x, A.minimum.y, A.minimum.x, A.minimum.y);
-    __m128 max = _mm_set_ps(A.maximum.x, A.maximum.y, A.maximum.x, A.maximum.y);
+    __m128 min = _mm_set_ps(minimum.x, minimum.y, minimum.x, minimum.y);
+    __m128 max = _mm_set_ps(maximum.x, maximum.y, maximum.x, maximum.y);
 
-    __m128 rot = _mm_set_ps(rotMat.X.x, rotMat.Y.x, rotMat.X.y, rotMat.Y.y);
+    __m128 rot = _mm_set_ps(rotation.X.x, rotation.Y.x, rotation.X.y, rotation.Y.y);
 
     __m128 e = _mm_mul_ps(min, rot);
     __m128 f = _mm_mul_ps(max, rot);
 
-    __m128 mask = _mm_cmple_ps(e, f);
-    unsigned int blendMask = _mm_movemask_ps(mask);
-    min = _mm_blend_ps(e, f, blendMask);
-    max = _mm_blend_ps(f, e, blendMask);
+    __m128 blendMask = _mm_cmple_ps(e, f);
+    min = _mm_blendv_ps(e, f, blendMask);
+    max = _mm_blendv_ps(f, e, blendMask);
 
     min = _mm_hadd_ps(e, e);
     max = _mm_hadd_ps(f, f);
 
-    return AABB(_mm_shuffle_ps(min, max, _MM_SHUFFLE(2, 0, 2, 0)));
+    __m128 aabb = _mm_shuffle_ps(min, max, _MM_SHUFFLE(2, 0, 2, 0));
+
+    __m128 pos = _mm_set_ps(position.x, position.y, position.x, position.y);
+
+    return AABB(_mm_add_ps(aabb, pos));
+}
+
+void AABB::Draw(const AABB& A) noexcept
+{
+    Vec2 leftUp(A.minimum.x, A.maximum.y);
+    Vec2 leftDown(A.minimum);
+    Vec2 rightUp(A.maximum);
+    Vec2 rightDown(A.maximum.x, A.minimum.y);
+
+    gVars->pRenderer->DrawLine(leftUp, rightUp, 1.0f, 0.0f, 0.0f);
+    gVars->pRenderer->DrawLine(rightUp, rightDown, 1.0f, 0.0f, 0.0f);
+    gVars->pRenderer->DrawLine(rightDown, leftDown, 1.0f, 0.0f, 0.0f);
+    gVars->pRenderer->DrawLine(leftDown, leftUp, 1.0f, 0.0f, 0.0f);
 }

@@ -5,6 +5,7 @@
 #include <unordered_map>
 #include "Maths.h"
 #include "shapes/Polygon.h"
+#include "shapes/AABB.h"
 
 class IBroadPhase;
 
@@ -48,9 +49,13 @@ public:
 		}
 	}
 
+	void AddLocalAABB(const AABB& aabb);
+	void RemoveLocalAABB(size_t index);
+
 private:
 	friend class CPenetrationVelocitySolver;
 
+	void						BuildAABBTree();
 	void						CollisionBroadPhase();
 	void						CollisionNarrowPhase();
 
@@ -60,6 +65,9 @@ private:
 	IBroadPhase*				m_broadPhase;
 	std::vector<SPolygonPair>	m_pairsToCheck;
 	std::vector<SCollision>		m_collidingPairs;
+
+	std::vector<AABB> m_localAABBs;
+	std::vector<AABB> m_worldAABBs;
 };
 
 #endif

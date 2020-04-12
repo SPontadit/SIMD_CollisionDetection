@@ -1,6 +1,7 @@
 #include "World.h"
 
-#include "shapes/Polygon.h"
+#include "GlobalVariables.h"
+#include "physics/PhysicEngine.h"
 
 CPolygonPtr		CWorld::AddTriangle(float base, float height)
 {
@@ -23,7 +24,7 @@ CPolygonPtr		CWorld::AddTriangle(float base, float height)
 
 	poly->Build();
 
-	m_localAABBs.push_back(AABB({ -halfBase, -halfHeight }, {halfBase, halfHeight}));
+	gVars->pPhysicEngine->AddLocalAABB(AABB({ -halfBase, -halfHeight }, {halfBase, halfHeight}));
 
 	return poly;
 }
@@ -51,7 +52,7 @@ CPolygonPtr		CWorld::AddRectangle(float width, float height)
 
 	poly->Build();
 
-	m_localAABBs.push_back(AABB({ -halfWidth, -halfHeight}, {halfWidth, halfHeight}));
+	gVars->pPhysicEngine->AddLocalAABB(AABB({ -halfWidth, -halfHeight}, {halfWidth, halfHeight}));
 
 	return poly;
 }
@@ -78,7 +79,7 @@ CPolygonPtr		CWorld::AddSymetricPolygon(float radius, size_t sides)
 	}
 	poly->Build();
 
-	m_localAABBs.push_back(AABB({ -radius, -radius }, { radius, radius }));
+	gVars->pPhysicEngine->AddLocalAABB(AABB({ -radius, -radius }, { radius, radius }));
 
 	return poly;
 }
@@ -111,7 +112,7 @@ CPolygonPtr		CWorld::AddRandomPoly(const SRandomPolyParams& params)
 	rot.SetAngle(Random(-180.0f, 180.0f));
 	poly->speed = rot.X * Random(params.minSpeed, params.maxSpeed);
 
-	m_localAABBs.push_back(AABB({ -radius, -radius }, { radius, radius }));
+	gVars->pPhysicEngine->AddLocalAABB(AABB({ -radius, -radius }, { radius, radius }));
 
 	return poly;
 }
@@ -132,11 +133,9 @@ void	CWorld::RemovePolygon(CPolygonPtr poly)
 		CPolygonPtr movedPoly = m_polygons[m_polygons.size() - 1];
 		m_polygons[index] = movedPoly;
 		movedPoly->m_index = index;
-
-		m_localAABBs[index] = m_localAABBs[m_localAABBs.size() - 1];
-
 		m_polygons.pop_back();
-		m_localAABBs.pop_back();
+
+		gVars->pPhysicEngine->RemoveLocalAABB(index);
 	}
 }
 

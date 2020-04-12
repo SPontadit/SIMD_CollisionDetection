@@ -16,6 +16,9 @@ void	CPhysicEngine::Reset()
 	m_pairsToCheck.clear();
 	m_collidingPairs.clear();
 
+	m_localAABBs.clear();
+	m_worldAABBs.clear();
+
 	m_active = true;
 
 	m_broadPhase = new CBroadPhaseBrut();
@@ -53,7 +56,34 @@ void	CPhysicEngine::Step(float deltaTime)
 		return;
 	}
 
+	BuildAABBTree();
+
 	DetectCollisions();
+}
+
+void	CPhysicEngine::AddLocalAABB(const AABB& aabb)
+{
+	m_localAABBs.push_back(aabb);
+}
+
+void CPhysicEngine::RemoveLocalAABB(size_t index)
+{
+	m_localAABBs[index] = m_localAABBs[m_localAABBs.size() - 1];
+	m_localAABBs.pop_back();
+}
+
+void	CPhysicEngine::BuildAABBTree()
+{
+	m_worldAABBs.clear();
+
+	for (size_t i = 0; i < m_localAABBs.size(); i++)
+	{
+		CPolygonPtr poly = gVars->pWorld->GetPolygon(i);
+
+		m_worldAABBs.push_back(m_localAABBs[i].Transform(poly->position, poly->rotation));
+
+		AABB::Draw(m_worldAABBs[i]);
+	}
 }
 
 void	CPhysicEngine::CollisionBroadPhase()

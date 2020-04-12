@@ -65,8 +65,6 @@ public:
 protected:
 	std::vector<CPolygonPtr>	m_polygons;
 	std::vector<CBehaviorPtr>	m_behaviors;
-
-	std::vector<AABB> m_localAABBs;
 };
 
 #endif
