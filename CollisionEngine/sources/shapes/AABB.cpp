@@ -74,26 +74,27 @@ R = B B B B
 
 AABB AABB::Transform(Vec2 position, Mat2 rotation) const noexcept
 {
-    __m128 min = _mm_set_ps(minimum.x, minimum.y, minimum.x, minimum.y);
-    __m128 max = _mm_set_ps(maximum.x, maximum.y, maximum.x, maximum.y);
+    __m128 min = _mm_set_ps(minimum.y, minimum.x, minimum.y, minimum.x);
+    __m128 max = _mm_set_ps(maximum.y, maximum.x, maximum.y, maximum.x);
 
-    __m128 rot = _mm_set_ps(rotation.X.x, rotation.Y.x, rotation.X.y, rotation.Y.y);
+    __m128 rot = _mm_set_ps(rotation.Y.y, rotation.X.y, rotation.Y.x, rotation.X.x);
 
     __m128 e = _mm_mul_ps(min, rot);
     __m128 f = _mm_mul_ps(max, rot);
 
-    __m128 blendMask = _mm_cmple_ps(e, f);
+    __m128 blendMask = _mm_cmpgt_ps(e, f);
     min = _mm_blendv_ps(e, f, blendMask);
     max = _mm_blendv_ps(f, e, blendMask);
 
-    min = _mm_hadd_ps(e, e);
-    max = _mm_hadd_ps(f, f);
+    min = _mm_hadd_ps(min, min);
+    max = _mm_hadd_ps(max, max);
 
-    __m128 aabb = _mm_shuffle_ps(min, max, _MM_SHUFFLE(2, 0, 2, 0));
+    __m128 aabb = _mm_shuffle_ps(min, max, _MM_SHUFFLE(1, 0, 1, 0));
 
-    __m128 pos = _mm_set_ps(position.x, position.y, position.x, position.y);
+    __m128 pos = _mm_set_ps(position.y, position.x, position.y, position.x);
 
-    return AABB(_mm_add_ps(aabb, pos));
+    AABB res = AABB(_mm_add_ps(aabb, pos));
+    return res;
 }
 
 void AABB::Draw(const AABB& A) noexcept
