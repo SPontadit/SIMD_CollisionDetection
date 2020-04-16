@@ -21,6 +21,15 @@ private:
 		secondPoly->position = Vec2(5.0f, 5.0f);
 		secondPoly->density = 0.0f;
 
+		CPolygonPtr secondPol = gVars->pWorld->AddTriangle(25.0f, 20.0f);
+		secondPol->position = Vec2(5.0f, 5.0f);
+		secondPol->density = 0.0f;
+
+		CPolygonPtr s = gVars->pWorld->AddTriangle(25.0f, 20.0f);
+		s->position = Vec2(5.0f, 0.0f);
+		s->density = 0.0f;
+
+
 		CDisplayCollision* displayCollision = static_cast<CDisplayCollision*>(gVars->pWorld->AddBehavior<CDisplayCollision>(nullptr).get());
 		displayCollision->polyA = firstPoly;
 		displayCollision->polyB = secondPoly;

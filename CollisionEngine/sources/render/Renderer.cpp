@@ -55,7 +55,6 @@ void CRenderer::DisplayTextWorld(const std::string& text, const Vec2& worldPos)
 	DisplayText(text, (int)screenPos.x, (int)screenPos.y);
 }
 
-
 void CRenderer::DrawLine(const Vec2& from, const Vec2& to, float r, float g, float b)
 {
 	glColor3f(r, g, b);
@@ -63,6 +62,12 @@ void CRenderer::DrawLine(const Vec2& from, const Vec2& to, float r, float g, flo
 	glVertex3f(from.x, from.y, -1.0f);
 	glVertex3f(to.x, to.y, -1.0f);
 	glEnd();
+}
+
+void CRenderer::DrawCross(const Vec2& pos, float size, float r, float g, float b)
+{
+	DrawLine({ pos.x - size , pos.y + size }, { pos.x + size, pos.y - size }, r, g, b);
+	DrawLine({ pos.x - size,  pos.y - size }, { pos.x + size, pos.y + size }, r, g, b);
 }
 
 Vec2 CRenderer::ScreenToWorldPos(const Vec2& pos) const
@@ -111,6 +116,10 @@ void CRenderer::Update()
 	{
 		gVars->bDebug = !gVars->bDebug;
 	}
+	if (gVars->pRenderWindow->JustPressedKey(Key::F5))
+	{
+		gVars->pPhysicEngine->useSAH = !gVars->pPhysicEngine->useSAH;
+	}
 
 	gVars->pSceneManager->CheckSceneUpdate();
 
@@ -139,7 +148,7 @@ void CRenderer::Update()
 
 	RenderTexts();
 
-	UpdateLockFPS();
+	//UpdateLockFPS();
 }
 
 void  CRenderer::SetProjectionMatrix()

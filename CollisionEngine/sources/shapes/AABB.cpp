@@ -1,7 +1,10 @@
 #include "shapes/AABB.h"
 
+#include <algorithm>
+
 #include "GlobalVariables.h"
 #include "render/Renderer.h"
+#include "physics/PhysicEngine.h"
 
 /**
         X      Y
@@ -94,18 +97,39 @@ AABB AABB::Transform(Vec2 position, Mat2 rotation) const noexcept
     __m128 pos = _mm_set_ps(position.y, position.x, position.y, position.x);
 
     AABB res = AABB(_mm_add_ps(aabb, pos));
+    res.maximum *= -1.0f;
+
     return res;
 }
 
-void AABB::Draw(const AABB& A) noexcept
+void AABB::DrawWorld(const AABB& A) noexcept
 {
-    Vec2 leftUp(A.minimum.x, A.maximum.y);
+    Vec2 leftUp(A.minimum.x, -A.maximum.y);
     Vec2 leftDown(A.minimum);
-    Vec2 rightUp(A.maximum);
-    Vec2 rightDown(A.maximum.x, A.minimum.y);
+    Vec2 rightUp(-A.maximum.x, -A.maximum.y);
+    Vec2 rightDown(-A.maximum.x, A.minimum.y);
 
     gVars->pRenderer->DrawLine(leftUp, rightUp, 1.0f, 0.0f, 0.0f);
     gVars->pRenderer->DrawLine(rightUp, rightDown, 1.0f, 0.0f, 0.0f);
     gVars->pRenderer->DrawLine(rightDown, leftDown, 1.0f, 0.0f, 0.0f);
     gVars->pRenderer->DrawLine(leftDown, leftUp, 1.0f, 0.0f, 0.0f);
+}
+
+float AABB::GetSurface(const std::vector<AABB>& aabbs) noexcept
+{
+	AABB s = AABB::GetSurrounding(aabbs);
+
+	Vec2 max{ -s.maximum.x, -s.maximum.y };
+	Vec2 area(max - s.minimum);
+
+	return area.x * area.y;
+}
+
+AABB AABB::GetSurrounding(const std::vector<AABB>& aabbs) noexcept
+{
+	__m128 surround = aabbs[0].reg;
+	for (size_t i = 1; i < aabbs.size(); i++)
+		surround = _mm_min_ps(surround, aabbs[i].reg);
+
+	return AABB(surround);
 }

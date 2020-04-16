@@ -52,10 +52,13 @@ public:
 	void AddLocalAABB(const AABB& aabb);
 	void RemoveLocalAABB(size_t index);
 
+	bool useSAH = true;
+
 private:
 	friend class CPenetrationVelocitySolver;
 
 	void						BuildAABBTree();
+	void						BuildAABBTree_Internal(Node** tree, std::vector<AABB>& aabbs);
 	void						CollisionBroadPhase();
 	void						CollisionNarrowPhase();
 

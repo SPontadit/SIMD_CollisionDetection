@@ -2,6 +2,7 @@
 
 #include <iostream>
 #include <string>
+#include <algorithm>
 #include "GlobalVariables.h"
 #include "World.h"
 #include "render/Renderer.h" // for debugging only
@@ -53,7 +54,7 @@ void	CPhysicEngine::Step(float deltaTime)
 {
 	if (!m_active)
 	{
-		return;
+		//return;
 	}
 
 	BuildAABBTree();
@@ -72,17 +73,116 @@ void CPhysicEngine::RemoveLocalAABB(size_t index)
 	m_localAABBs.pop_back();
 }
 
+void DrawTree(Node* tree, float index)
+{
+	if (tree != nullptr)
+	{
+		AABB::DrawWorld(tree->aabb);
+
+		if (tree->isLeaf == false)
+		{
+			DrawTree(tree->leftNode, ++index);
+			DrawTree(tree->rightNode, ++index);
+		}
+	}
+}
+
 void	CPhysicEngine::BuildAABBTree()
 {
 	m_worldAABBs.clear();
 
-	for (size_t i = 0; i < m_localAABBs.size(); i++)
+	const int aabbSize = m_localAABBs.size();
+
+
+	for (size_t i = 0; i < aabbSize; i++)
 	{
 		CPolygonPtr poly = gVars->pWorld->GetPolygon(i);
 
-		m_worldAABBs.push_back(m_localAABBs[i].Transform(poly->position, poly->rotation));
+		AABB worldAABB = m_localAABBs[i].Transform(poly->position, poly->rotation);
+		m_worldAABBs.push_back(worldAABB);
 
-		AABB::Draw(m_worldAABBs[i]);
+		//AABB::DrawWorld(m_worldAABBs[i]);
+	}
+
+	Node* tree = new Node();
+	BuildAABBTree_Internal(&tree, std::vector<AABB>(m_worldAABBs.begin() + 4, m_worldAABBs.end()));
+
+
+	DrawTree(tree, 0);
+	
+
+	//AABB surrender(_mm_min_ps(m_worldAABBs[4].reg, m_worldAABBs[5].reg));
+}
+
+void CPhysicEngine::BuildAABBTree_Internal(Node** tree, std::vector<AABB>& aabbs)
+{
+	size_t aabbCount = aabbs.size();
+
+	Node* node = new Node();
+	*tree = node;
+
+	node->aabb = AABB::GetSurrounding(aabbs);
+
+	if (aabbCount <= 1)
+	{
+		node->isLeaf = true;
+		return;
+	}
+	else
+	{
+		node->isLeaf = false;
+
+		std::vector<AABB> xSortedAABB, ySortedAABB;
+		xSortedAABB = ySortedAABB = aabbs;
+
+		std::sort(xSortedAABB.begin(), xSortedAABB.end(), [](AABB& a, AABB& b)
+			{
+				return ((a.minimum.x + a.maximum.x) * 0.5f) < ((b.minimum.x + b.maximum.x) * 0.5f);
+			});
+
+		std::sort(ySortedAABB.begin(), ySortedAABB.end(), [](AABB& a, AABB& b)
+			{
+				return ((a.minimum.y + a.maximum.y) * 0.5f) < ((b.minimum.y + b.maximum.y) * 0.5f);
+			});
+
+		const int middle = aabbCount / 2;
+
+		std::vector<AABB> backX(std::make_move_iterator(xSortedAABB.cbegin()), std::make_move_iterator(xSortedAABB.cbegin() + middle));
+		std::vector<AABB> frontX(std::make_move_iterator(xSortedAABB.cbegin() + middle), std::make_move_iterator(xSortedAABB.cend()));
+
+		std::vector<AABB> backY(std::make_move_iterator(ySortedAABB.cbegin()), std::make_move_iterator(ySortedAABB.cbegin() + middle));
+		std::vector<AABB> frontY(std::make_move_iterator(ySortedAABB.cbegin() + middle), std::make_move_iterator(ySortedAABB.cend()));
+
+
+		float SAH_X = AABB::GetSurface(backX) + AABB::GetSurface(frontX);
+		float SAH_Y = AABB::GetSurface(backY) + AABB::GetSurface(frontY);
+
+//		if (gVars->pPhysicEngine->useSAH)
+		{
+			if (SAH_X < SAH_Y)
+			{
+				BuildAABBTree_Internal(&(node->leftNode), std::move(backX));
+				BuildAABBTree_Internal(&(node->rightNode), std::move(frontX));
+			}
+			else
+			{
+				BuildAABBTree_Internal(&(node->leftNode), std::move(backY));
+				BuildAABBTree_Internal(&(node->rightNode), std::move(frontY));
+			}
+		}
+		//else
+		//{
+		//	if (gVars->bDebug)
+		//	{
+		//		BuildAABBTree_Internal(&(node->leftNode), std::move(backY));
+		//		BuildAABBTree_Internal(&(node->rightNode), std::move(frontY));
+		//	}
+		//	else
+		//	{
+		//		BuildAABBTree_Internal(&(node->leftNode), std::move(backX));
+		//		BuildAABBTree_Internal(&(node->rightNode), std::move(frontX));
+		//	}
+		//}
 	}
 }
 

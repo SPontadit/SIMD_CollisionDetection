@@ -3,6 +3,7 @@
 
 #include <cfloat>
 #include "Maths.h"
+#include <vector>
 #include <smmintrin.h>
 
 struct AABB
@@ -23,7 +24,22 @@ struct AABB
 
     AABB Transform(Vec2 position, Mat2 rotation) const noexcept;
 
-    static void Draw(const AABB& A) noexcept;
+    static void DrawWorld(const AABB& A) noexcept;
+    static float GetSurface(const std::vector<AABB>& aabbs) noexcept;
+    static AABB GetSurrounding(const std::vector<AABB>& aabbs) noexcept;
+};
+
+
+struct Node
+{
+    Node() = default;
+    
+    Node(const std::vector<AABB>& nodes) noexcept;
+
+    bool isLeaf;
+    Node* leftNode;
+    Node* rightNode;
+    AABB aabb;
 };
 
 #endif
