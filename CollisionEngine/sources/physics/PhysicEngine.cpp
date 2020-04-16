@@ -137,12 +137,12 @@ void CPhysicEngine::BuildAABBTree_Internal(Node** tree, std::vector<AABB>& aabbs
 
 		std::sort(xSortedAABB.begin(), xSortedAABB.end(), [](AABB& a, AABB& b)
 			{
-				return ((a.minimum.x + a.maximum.x) * 0.5f) < ((b.minimum.x + b.maximum.x) * 0.5f);
+				return ((a.minimum.x - a.maximum.x) * 0.5f) < ((b.minimum.x - b.maximum.x) * 0.5f);
 			});
 
 		std::sort(ySortedAABB.begin(), ySortedAABB.end(), [](AABB& a, AABB& b)
 			{
-				return ((a.minimum.y + a.maximum.y) * 0.5f) < ((b.minimum.y + b.maximum.y) * 0.5f);
+				return ((a.minimum.y - a.maximum.y) * 0.5f) < ((b.minimum.y - b.maximum.y) * 0.5f);
 			});
 
 		const int middle = aabbCount / 2;
