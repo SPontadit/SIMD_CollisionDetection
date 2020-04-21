@@ -133,3 +133,15 @@ AABB AABB::GetSurrounding(const std::vector<AABB>& aabbs) noexcept
 
 	return AABB(surround);
 }
+
+int AABB::Intersect(const PackedAABB test, const PackedAABB node) noexcept
+{
+    __m128 r0 = _mm_cmplt_ps(test.maximumX, node.minimumX);
+    __m128 r1 = _mm_cmpgt_ps(test.minimumX, node.maximumX);
+    __m128 r2 = _mm_cmplt_ps(test.maximumY, node.minimumY);
+    __m128 r3 = _mm_cmpgt_ps(test.minimumY, node.maximumY);
+    
+    int mask = _mm_movemask_ps(_mm_or_ps(_mm_or_ps(_mm_or_ps(r0, r1), r2), r3));
+    
+    return ~mask & 0xF;
+}

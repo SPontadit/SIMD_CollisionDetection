@@ -6,6 +6,18 @@
 #include <vector>
 #include <smmintrin.h>
 
+struct PackedAABB
+{
+    PackedAABB(__m128 minX, __m128 minY, __m128 maxX, __m128 maxY)
+        : minimumX(minX), minimumY(minY), maximumX(maxX), maximumY(maxY) { }
+
+    __m128 minimumX;
+    __m128 minimumY;
+    __m128 maximumX;
+    __m128 maximumY;
+};
+
+
 struct AABB
 {
     constexpr AABB()
@@ -27,6 +39,7 @@ struct AABB
     static void DrawWorld(const AABB& A) noexcept;
     static float GetSurface(const std::vector<AABB>& aabbs) noexcept;
     static AABB GetSurrounding(const std::vector<AABB>& aabbs) noexcept;
+    static int Intersect(const PackedAABB test, const PackedAABB node) noexcept;
 };
 
 
