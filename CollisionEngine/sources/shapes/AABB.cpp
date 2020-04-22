@@ -75,6 +75,11 @@ R = B B B B
 
 **/
 
+float AABB::Surface() const noexcept
+{
+    return (-maximum.x - minimum.x) * (-maximum.y - minimum.y);
+}
+
 AABB AABB::Transform(Vec2 position, Mat2 rotation) const noexcept
 {
     __m128 min = _mm_set_ps(minimum.y, minimum.x, minimum.y, minimum.x);
@@ -144,4 +149,18 @@ int AABB::Intersect(const PackedAABB test, const PackedAABB node) noexcept
     int mask = _mm_movemask_ps(_mm_or_ps(_mm_or_ps(_mm_or_ps(r0, r1), r2), r3));
     
     return ~mask & 0xF;
+}
+
+void Node4::SetAABB(size_t index, const AABB& aabb) noexcept
+{
+    packedAABBs.minimumX.m128_f32[index] = aabb.minimum.x;
+    packedAABBs.minimumY.m128_f32[index] = aabb.minimum.y;
+    packedAABBs.maximumX.m128_f32[index] = aabb.maximum.x;
+    packedAABBs.maximumY.m128_f32[index] = aabb.maximum.y;
+}
+
+AABB Node4::GetAABB(size_t index) const noexcept
+{
+    return AABB({ packedAABBs.minimumX.m128_f32[index], packedAABBs.minimumY.m128_f32[index] },
+                { packedAABBs.maximumX.m128_f32[index], packedAABBs.maximumY.m128_f32[index] });
 }

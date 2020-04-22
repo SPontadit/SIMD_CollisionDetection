@@ -8,7 +8,11 @@
 
 struct PackedAABB
 {
-    PackedAABB(__m128 minX, __m128 minY, __m128 maxX, __m128 maxY)
+    PackedAABB() noexcept
+        : minimumX(_mm_set_ps1(FLT_MAX)), minimumY(_mm_set_ps1(FLT_MAX)),
+        maximumX(_mm_set_ps1(FLT_MIN)), maximumY(_mm_set_ps1(FLT_MIN)) { }
+
+    PackedAABB(__m128 minX, __m128 minY, __m128 maxX, __m128 maxY) noexcept
         : minimumX(minX), minimumY(minY), maximumX(maxX), maximumY(maxY) { }
 
     __m128 minimumX;
@@ -34,6 +38,7 @@ struct AABB
         __m128 reg;
     };
 
+    float Surface() const noexcept;
     AABB Transform(Vec2 position, Mat2 rotation) const noexcept;
 
     static void DrawWorld(const AABB& A) noexcept;
@@ -53,6 +58,19 @@ struct Node
     Node* leftNode;
     Node* rightNode;
     AABB aabb;
+};
+
+struct Node4
+{
+    Node4() noexcept
+        : packedAABBs(), children{ nullptr, nullptr, nullptr, nullptr }/*, childTypeMask(0)*/ { }
+
+    PackedAABB packedAABBs;
+    Node4* children[4];
+    //uint8_t childTypeMask;
+
+    void SetAABB(size_t index, const AABB& aabb) noexcept;
+    AABB GetAABB(size_t index) const noexcept;
 };
 
 #endif

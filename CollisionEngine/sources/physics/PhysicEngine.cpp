@@ -73,7 +73,7 @@ void CPhysicEngine::RemoveLocalAABB(size_t index)
 	m_localAABBs.pop_back();
 }
 
-void DrawTree(Node* tree, float index)
+void DrawTree(Node* tree)
 {
 	if (tree != nullptr)
 	{
@@ -81,9 +81,24 @@ void DrawTree(Node* tree, float index)
 
 		if (tree->isLeaf == false)
 		{
-			DrawTree(tree->leftNode, ++index);
-			DrawTree(tree->rightNode, ++index);
+			DrawTree(tree->leftNode);
+			DrawTree(tree->rightNode);
 		}
+	}
+}
+
+void DrawTree4(Node4* node)
+{
+	if (node == nullptr)
+		return;
+
+	for (size_t i = 0; i < 4; i++)
+	{
+		AABB::DrawWorld(node->GetAABB(i));
+
+		Node4* child = node->children[i];
+		if (child != nullptr)
+			DrawTree4(child);
 	}
 }
 
@@ -109,7 +124,10 @@ void	CPhysicEngine::BuildAABBTree()
 	// Reuse pointer ?
 	BuildAABBTree_Internal(&tree, std::vector<AABB>(m_worldAABBs.begin() + 4, m_worldAABBs.end()));
 
-	DrawTree(tree, 0);
+	// Convert BVH2 to BVH4
+	Node4* tree4 = BVH2ToBVH4(tree);
+
+	DrawTree4(tree4);
 	
 
 	AABB surrender(_mm_min_ps(m_worldAABBs[4].reg, m_worldAABBs[5].reg));
@@ -186,6 +204,59 @@ void CPhysicEngine::BuildAABBTree_Internal(Node** tree, std::vector<AABB>& aabbs
 			BuildAABBTree_Internal(&(node->rightNode), std::move(frontY));
 		}
 	}
+}
+
+Node4* CPhysicEngine::BVH2ToBVH4(Node* node2)
+{
+	if (node2->isLeaf)
+		return nullptr;
+
+	Node4* node4 = new Node4;
+
+	Node* nodes[4];
+
+	nodes[0] = node2->leftNode;
+	node4->SetAABB(0, node2->leftNode->aabb);
+
+	nodes[1] = node2->rightNode;
+	node4->SetAABB(1, node2->rightNode->aabb);
+
+	size_t childCount = 2;
+
+	while (childCount < 4)
+	{
+		int64_t bestIdx = -1;
+		float bestArea = -std::numeric_limits<float>::infinity();
+
+		for (size_t i = 0; i < childCount; i++)
+		{
+			if (nodes[i]->isLeaf)
+				continue;
+
+			float area = nodes[i]->aabb.Surface();
+			if (area > bestArea)
+			{
+				bestArea = area;
+				bestIdx = i;
+			}
+		}
+
+		if (bestIdx < 0)
+			break;
+
+		Node* bestNode = nodes[bestIdx];
+		nodes[bestIdx] = bestNode->leftNode;
+		node4->SetAABB(bestIdx, bestNode->leftNode->aabb);
+		nodes[childCount] = bestNode->rightNode;
+		node4->SetAABB(childCount, bestNode->rightNode->aabb);
+
+		childCount++;
+	}
+
+	for (size_t i = 0; i < childCount; i++)
+		node4->children[i] = BVH2ToBVH4(nodes[i]);
+
+	return node4;
 }
 
 void	CPhysicEngine::CollisionBroadPhase()

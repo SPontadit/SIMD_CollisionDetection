@@ -59,6 +59,7 @@ private:
 
 	void						BuildAABBTree();
 	void						BuildAABBTree_Internal(Node** tree, std::vector<AABB>& aabbs);
+	Node4*						BVH2ToBVH4(Node* node2);
 	void						CollisionBroadPhase();
 	void						CollisionNarrowPhase();
 
