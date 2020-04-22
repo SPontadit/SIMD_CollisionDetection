@@ -23,17 +23,17 @@ protected:
 
 		SRandomPolyParams params;
 		params.minRadius = 1.0f;
-		params.maxRadius = 1.0f;
+		params.maxRadius = 3.0f;
 		params.minBounds = Vec2(-width * 0.5f + params.maxRadius * 3.0f, -height * 0.5f + params.maxRadius * 3.0f);
 		params.maxBounds = params.minBounds * -1.0f;
-		params.minPoints = 3;
-		params.maxPoints = 8;
+		params.minPoints = 4;
+		params.maxPoints = 4;
 		params.minSpeed = 1.0f;
 		params.maxSpeed = 3.0f;
 		
 		for (size_t i = 0; i < 20; ++i)
 		{
-			gVars->pWorld->AddRandomPoly(params)->density = 0.0f;
+			gVars->pWorld->AddRandomRectangle(params)->density = 0.0f;
 		}
 	}
 

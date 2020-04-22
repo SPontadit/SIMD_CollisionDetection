@@ -20,6 +20,7 @@ class CWorld
 public:
 	CPolygonPtr		AddTriangle(float base, float height);
 	CPolygonPtr		AddRectangle(float width, float height);
+	CPolygonPtr		AddRandomRectangle(const SRandomPolyParams& params);
 	CPolygonPtr		AddSquare(float size);
 	CPolygonPtr		AddSymetricPolygon(float radius, size_t sides);
 	CPolygonPtr		AddRandomPoly(const SRandomPolyParams& params);

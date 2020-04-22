@@ -57,6 +57,41 @@ CPolygonPtr		CWorld::AddRectangle(float width, float height)
 	return poly;
 }
 
+CPolygonPtr		CWorld::AddRandomRectangle(const SRandomPolyParams& params)
+{
+	CPolygonPtr poly = AddPolygon();
+
+	const float halfWidth = fabs(Random(params.minRadius, params.maxRadius)) * 0.5f;
+	const float halfHeight = fabs(Random(params.minRadius, params.maxRadius)) * 0.5f;
+
+	poly->pointCount = 4;
+	poly->pointsX = new float[4];
+	poly->pointsY = new float[4];
+
+	poly->pointsX[0] = -halfWidth;
+	poly->pointsX[1] = halfWidth;
+	poly->pointsX[2] = halfWidth;
+	poly->pointsX[3] = -halfWidth;
+
+	poly->pointsY[0] = -halfHeight;
+	poly->pointsY[1] = -halfHeight;
+	poly->pointsY[2] = halfHeight;
+	poly->pointsY[3] = halfHeight;
+
+	poly->Build();
+	poly->rotation.SetAngle(Random(-180.0f, 180.0f));
+	poly->position.x = Random(params.minBounds.x, params.maxBounds.x);
+	poly->position.y = Random(params.minBounds.y, params.maxBounds.y);
+
+	Mat2 rot;
+	rot.SetAngle(Random(-180.0f, 180.0f));
+	poly->speed = rot.X * Random(params.minSpeed, params.maxSpeed);
+
+	gVars->pPhysicEngine->AddLocalAABB(AABB({ -halfWidth, -halfHeight }, { halfWidth, halfHeight }));
+
+	return poly;
+}
+
 CPolygonPtr		CWorld::AddSquare(float size)
 {
 	return AddRectangle(size, size);
