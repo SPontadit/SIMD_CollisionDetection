@@ -298,22 +298,73 @@ bool OBBCollisionTest(CPolygonPtr p1, CPolygonPtr p2)
 	__m128 r2x = _mm_add_ps(_mm_mul_ps(e2x, rot2Xx), _mm_mul_ps(e2y, rot2Yx));
 	__m128 r2y = _mm_add_ps(_mm_mul_ps(e2x, rot2Xy), _mm_mul_ps(e2y, rot2Yy));
 
-	__m128 ax = _mm_set_ps(p1->rotation.X.x, p1->rotation.Y.x, p2->rotation.X.x, p2->rotation.Y.x);
-	__m128 ay = _mm_set_ps(p1->rotation.X.y, p1->rotation.Y.y, p2->rotation.X.y, p2->rotation.Y.y);
-
 	__m128 absMask = _mm_castsi128_ps(_mm_set1_epi32(0x7fffffff));
+
+	__m128 ax = _mm_and_ps(_mm_set_ps(p2->rotation.Y.x, p2->rotation.X.x, p1->rotation.Y.x, p1->rotation.X.x), absMask);
+	__m128 ay = _mm_and_ps(_mm_set_ps(p2->rotation.Y.y, p2->rotation.X.y, p1->rotation.Y.y, p1->rotation.X.y), absMask);
+	//__m128 ax = _mm_set_ps(p2->rotation.Y.x, p2->rotation.X.x, p1->rotation.Y.x, p1->rotation.X.x);
+	//__m128 ay = _mm_set_ps(p2->rotation.Y.y, p2->rotation.X.y, p1->rotation.Y.y, p1->rotation.X.y);
+
 
 	__m128 r1 = _mm_and_ps(_mm_add_ps(_mm_mul_ps(r1x, ax), _mm_mul_ps(r1y, ay)), absMask);
 	__m128 r2 = _mm_and_ps(_mm_add_ps(_mm_mul_ps(r2x, ax), _mm_mul_ps(r2y, ay)), absMask);
 
 	__m128 r = _mm_add_ps(r1, r2);
 
-	__m128 d = _mm_add_ps(_mm_mul_ps(dx, ax), _mm_mul_ps(dy, ay));
+	__m128 d = _mm_and_ps(_mm_add_ps(_mm_mul_ps(dx, ax), _mm_mul_ps(dy, ay)), absMask);
 
 	__m128 res = _mm_cmpgt_ps(d, r);
 	int resMask = _mm_movemask_ps(res);
 
 	return resMask == 0;
+}
+
+bool SISD_OBBCollisionTest(CPolygonPtr p1, CPolygonPtr p2)
+{
+	float ra, rb;
+
+	float aE[2] = { p1->halfExtent.x, p1->halfExtent.y };
+	float bE[2] = { p2->halfExtent.x, p2->halfExtent.y };
+
+	float R[2][2];
+	float absR[2][2];
+
+	R[0][0] = p1->rotation.X | p2->rotation.X;
+	R[0][1] = p1->rotation.X | p2->rotation.Y;
+	R[1][0] = p1->rotation.Y | p2->rotation.X;
+	R[1][1] = p1->rotation.Y | p2->rotation.Y;
+
+	for (size_t i = 0; i < 2; i++)
+		for (size_t j = 0; j < 2; j++)
+			absR[i][j] = abs(R[i][j]) + FLT_EPSILON;
+
+	Vec2 tmp = p2->position - p1->position;
+	tmp = Vec2(tmp | p1->rotation.X, tmp | p1->rotation.Y);
+
+	float t[2] = { tmp.x, tmp.y };
+
+
+	//// Test axes L = A0, L = A1
+	for (size_t i = 0; i < 2; i++)
+	{
+		ra = aE[i];
+		rb = bE[0] * absR[i][0] + bE[1] * absR[i][1];
+
+		if (abs(t[i]) > ra + rb)
+			return 0;
+	}
+
+	// Test axes L = B0, L = B1
+	for (size_t i = 0; i < 2; i++)
+	{
+		ra = aE[0] * absR[0][i] + aE[1] * absR[1][i];
+		rb = bE[i];
+
+		if (abs(t[0] * R[0][i] + t[1] * R[1][i]) > ra + rb)
+			return 0;
+	}
+
+	return 1;
 }
 
 void	CPhysicEngine::CollisionNarrowPhase()
@@ -325,7 +376,7 @@ void	CPhysicEngine::CollisionNarrowPhase()
 		collision.polyA = pair.polyA;
 		collision.polyB = pair.polyB;
 		//if (pair.polyA->CheckCollision(*(pair.polyB), collision.point, collision.normal, collision.distance)) 
-		if (OBBCollisionTest(pair.polyA, pair.polyB))
+		if (SISD_OBBCollisionTest(pair.polyA, pair.polyB))
 		{
 			m_collidingPairs.push_back(collision);
 		}
