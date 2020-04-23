@@ -20,7 +20,7 @@ protected:
 	virtual void Create() override
 	{
 		gVars->pRenderer->SetWorldHeight(m_worldHeight);
-		CreateBorderRectangles();
+		//CreateBorderRectangles();
 
 		
 		gVars->pWorld->AddBehavior<CPolygonMoverTool>(nullptr);

@@ -23,6 +23,7 @@ public:
 	float*				pointsX;
 	float*				pointsY;
 	size_t				pointCount;
+	Vec2				halfExtent;
 
 	void				Build();
 	void				Draw();

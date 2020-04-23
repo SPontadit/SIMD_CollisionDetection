@@ -12,27 +12,17 @@ private:
 	{
 		CBaseScene::Create();
 
-		CPolygonPtr firstPoly = gVars->pWorld->AddTriangle(30.0f, 20.0f); 
-		firstPoly->density = 0.0f;
+		CPolygonPtr firstPoly = gVars->pWorld->AddRectangle(30.0f, 20.0f); 
 		firstPoly->position = Vec2(-5.0f, -5.0f);
-		firstPoly->Build();
+		firstPoly->density = 0.0f;
 
-		CPolygonPtr secondPoly = gVars->pWorld->AddTriangle(25.0f, 20.0f);
+		CPolygonPtr secondPoly = gVars->pWorld->AddRectangle(15.0f, 25.0f);
 		secondPoly->position = Vec2(5.0f, 5.0f);
 		secondPoly->density = 0.0f;
 
-		CPolygonPtr secondPol = gVars->pWorld->AddTriangle(25.0f, 20.0f);
-		secondPol->position = Vec2(5.0f, 5.0f);
-		secondPol->density = 0.0f;
-
-		CPolygonPtr s = gVars->pWorld->AddTriangle(25.0f, 20.0f);
-		s->position = Vec2(5.0f, 0.0f);
-		s->density = 0.0f;
-
-
-		CDisplayCollision* displayCollision = static_cast<CDisplayCollision*>(gVars->pWorld->AddBehavior<CDisplayCollision>(nullptr).get());
+		/*CDisplayCollision* displayCollision = static_cast<CDisplayCollision*>(gVars->pWorld->AddBehavior<CDisplayCollision>(nullptr).get());
 		displayCollision->polyA = firstPoly;
-		displayCollision->polyB = secondPoly;
+		displayCollision->polyB = secondPoly;*/
 	}
 };
 

@@ -122,7 +122,7 @@ void	CPhysicEngine::BuildAABBTree()
 	Node* tree = new Node();
 
 	// Reuse pointer ?
-	BuildAABBTree_Internal(&tree, std::vector<AABB>(m_worldAABBs.begin() + 4, m_worldAABBs.end()));
+	BuildAABBTree_Internal(&tree, std::vector<AABB>(m_worldAABBs.begin(), m_worldAABBs.end()));
 
 	// Convert BVH2 to BVH4
 	Node4* tree4 = BVH2ToBVH4(tree);
@@ -130,7 +130,7 @@ void	CPhysicEngine::BuildAABBTree()
 	DrawTree4(tree4);
 	
 
-	AABB surrender(_mm_min_ps(m_worldAABBs[4].reg, m_worldAABBs[5].reg));
+	/*AABB surrender(_mm_min_ps(m_worldAABBs[0].reg, m_worldAABBs[1].reg));
 
 
 	__m128 minX = _mm_set_ps( m_worldAABBs[0].minimum.x,  m_worldAABBs[1].minimum.x,  m_worldAABBs[2].minimum.x,  m_worldAABBs[3].minimum.x);
@@ -146,7 +146,7 @@ void	CPhysicEngine::BuildAABBTree()
 	PackedAABB node = PackedAABB(minX, minY, maxX, maxY);
 	PackedAABB test = PackedAABB(testMinX, testMinY, testMaxX, testMaxY);
 
-	std::cout << AABB::Intersect(test, node) << std::endl;
+	std::cout << AABB::Intersect(test, node) << std::endl;*/
 }
 
 void CPhysicEngine::BuildAABBTree_Internal(Node** tree, std::vector<AABB>& aabbs)
@@ -265,6 +265,57 @@ void	CPhysicEngine::CollisionBroadPhase()
 	m_broadPhase->GetCollidingPairsToCheck(m_pairsToCheck);
 }
 
+bool OBBCollisionTest(CPolygonPtr p1, CPolygonPtr p2)
+{
+	__m128 p1x = _mm_set_ps1(p1->position.x);
+	__m128 p1y = _mm_set_ps1(p1->position.y);
+
+	__m128 p2x = _mm_set_ps1(p2->position.x);
+	__m128 p2y = _mm_set_ps1(p2->position.y);
+
+	__m128 dx = _mm_sub_ps(p1x, p2x);
+	__m128 dy = _mm_sub_ps(p1y, p2y);
+
+	__m128 e1x = _mm_set_ps1(p1->halfExtent.x);
+	__m128 e1y = _mm_set_ps1(p1->halfExtent.y);
+
+	__m128 rot1Xx = _mm_set_ps1(p1->rotation.X.x);
+	__m128 rot1Xy = _mm_set_ps1(p1->rotation.X.y);
+	__m128 rot1Yx = _mm_set_ps1(p1->rotation.Y.x);
+	__m128 rot1Yy = _mm_set_ps1(p1->rotation.Y.y);
+
+	__m128 r1x = _mm_add_ps(_mm_mul_ps(e1x, rot1Xx), _mm_mul_ps(e1y, rot1Yx));
+	__m128 r1y = _mm_add_ps(_mm_mul_ps(e1x, rot1Xy), _mm_mul_ps(e1y, rot1Yy));
+
+	__m128 e2x = _mm_set_ps1(p2->halfExtent.x);
+	__m128 e2y = _mm_set_ps1(p2->halfExtent.y);
+
+	__m128 rot2Xx = _mm_set_ps1(p2->rotation.X.x);
+	__m128 rot2Xy = _mm_set_ps1(p2->rotation.X.y);
+	__m128 rot2Yx = _mm_set_ps1(p2->rotation.Y.x);
+	__m128 rot2Yy = _mm_set_ps1(p2->rotation.Y.y);
+
+	__m128 r2x = _mm_add_ps(_mm_mul_ps(e2x, rot2Xx), _mm_mul_ps(e2y, rot2Yx));
+	__m128 r2y = _mm_add_ps(_mm_mul_ps(e2x, rot2Xy), _mm_mul_ps(e2y, rot2Yy));
+
+	__m128 ax = _mm_set_ps(p1->rotation.X.x, p1->rotation.Y.x, p2->rotation.X.x, p2->rotation.Y.x);
+	__m128 ay = _mm_set_ps(p1->rotation.X.y, p1->rotation.Y.y, p2->rotation.X.y, p2->rotation.Y.y);
+
+	__m128 absMask = _mm_castsi128_ps(_mm_set1_epi32(0x7fffffff));
+
+	__m128 r1 = _mm_and_ps(_mm_add_ps(_mm_mul_ps(r1x, ax), _mm_mul_ps(r1y, ay)), absMask);
+	__m128 r2 = _mm_and_ps(_mm_add_ps(_mm_mul_ps(r2x, ax), _mm_mul_ps(r2y, ay)), absMask);
+
+	__m128 r = _mm_add_ps(r1, r2);
+
+	__m128 d = _mm_add_ps(_mm_mul_ps(dx, ax), _mm_mul_ps(dy, ay));
+
+	__m128 res = _mm_cmpgt_ps(d, r);
+	int resMask = _mm_movemask_ps(res);
+
+	return resMask == 0;
+}
+
 void	CPhysicEngine::CollisionNarrowPhase()
 {
 	m_collidingPairs.clear();
@@ -273,7 +324,8 @@ void	CPhysicEngine::CollisionNarrowPhase()
 		SCollision collision;
 		collision.polyA = pair.polyA;
 		collision.polyB = pair.polyB;
-		if (pair.polyA->CheckCollision(*(pair.polyB), collision.point, collision.normal, collision.distance)) 
+		//if (pair.polyA->CheckCollision(*(pair.polyB), collision.point, collision.normal, collision.distance)) 
+		if (OBBCollisionTest(pair.polyA, pair.polyB))
 		{
 			m_collidingPairs.push_back(collision);
 		}

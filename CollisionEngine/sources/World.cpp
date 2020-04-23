@@ -52,6 +52,8 @@ CPolygonPtr		CWorld::AddRectangle(float width, float height)
 
 	poly->Build();
 
+	poly->halfExtent = { halfWidth, halfHeight };
+
 	gVars->pPhysicEngine->AddLocalAABB(AABB({ -halfWidth, -halfHeight}, {halfWidth, halfHeight}));
 
 	return poly;
@@ -77,6 +79,8 @@ CPolygonPtr		CWorld::AddRandomRectangle(const SRandomPolyParams& params)
 	poly->pointsY[1] = -halfHeight;
 	poly->pointsY[2] = halfHeight;
 	poly->pointsY[3] = halfHeight;
+
+	poly->halfExtent = { halfWidth, halfHeight };
 
 	poly->Build();
 	poly->rotation.SetAngle(Random(-180.0f, 180.0f));
