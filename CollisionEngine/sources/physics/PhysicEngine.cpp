@@ -265,7 +265,7 @@ void	CPhysicEngine::CollisionBroadPhase()
 	m_broadPhase->GetCollidingPairsToCheck(m_pairsToCheck);
 }
 
-bool OBBCollisionTest(CPolygonPtr p1, CPolygonPtr p2)
+bool CPhysicEngine::SIMD_OBBCollisionTest(CPolygonPtr p1, CPolygonPtr p2) const noexcept
 {
 	__m128 p1x = _mm_set_ps1(p1->position.x);
 	__m128 p1y = _mm_set_ps1(p1->position.y);
@@ -276,50 +276,40 @@ bool OBBCollisionTest(CPolygonPtr p1, CPolygonPtr p2)
 	__m128 dx = _mm_sub_ps(p1x, p2x);
 	__m128 dy = _mm_sub_ps(p1y, p2y);
 
-	__m128 e1x = _mm_set_ps1(p1->halfExtent.x);
-	__m128 e1y = _mm_set_ps1(p1->halfExtent.y);
+	__m128 ex = _mm_set_ps(p1->halfExtent.x, p1->halfExtent.x, p2->halfExtent.x, p2->halfExtent.x);
+	__m128 ey = _mm_set_ps(p1->halfExtent.y, p1->halfExtent.y, p2->halfExtent.y, p2->halfExtent.y);
 
-	__m128 rot1Xx = _mm_set_ps1(p1->rotation.X.x);
-	__m128 rot1Xy = _mm_set_ps1(p1->rotation.X.y);
-	__m128 rot1Yx = _mm_set_ps1(p1->rotation.Y.x);
-	__m128 rot1Yy = _mm_set_ps1(p1->rotation.Y.y);
+	__m128 rotXx = _mm_set_ps(p1->rotation.X.x, p1->rotation.X.x, p2->rotation.X.x, p2->rotation.X.x);
+	__m128 rotXy = _mm_set_ps(p1->rotation.X.y, p1->rotation.X.y, p2->rotation.X.y, p2->rotation.X.y);
+	__m128 rotYx = _mm_set_ps(p1->rotation.Y.x, p1->rotation.Y.x, p2->rotation.Y.x, p2->rotation.Y.x);
+	__m128 rotYy = _mm_set_ps(p1->rotation.Y.y, p1->rotation.Y.y, p2->rotation.Y.y, p2->rotation.Y.y);
 
-	__m128 r1x = _mm_add_ps(_mm_mul_ps(e1x, rot1Xx), _mm_mul_ps(e1y, rot1Yx));
-	__m128 r1y = _mm_add_ps(_mm_mul_ps(e1x, rot1Xy), _mm_mul_ps(e1y, rot1Yy));
+	__m128 rx = _mm_add_ps(_mm_mul_ps(ex, rotXx), _mm_mul_ps(ey, rotYx));
+	__m128 ry = _mm_add_ps(_mm_mul_ps(ex, rotXy), _mm_mul_ps(ey, rotYy));
 
-	__m128 e2x = _mm_set_ps1(p2->halfExtent.x);
-	__m128 e2y = _mm_set_ps1(p2->halfExtent.y);
+	ey = _mm_xor_ps(ey, _mm_set_ps1(-0.f));
 
-	__m128 rot2Xx = _mm_set_ps1(p2->rotation.X.x);
-	__m128 rot2Xy = _mm_set_ps1(p2->rotation.X.y);
-	__m128 rot2Yx = _mm_set_ps1(p2->rotation.Y.x);
-	__m128 rot2Yy = _mm_set_ps1(p2->rotation.Y.y);
+	__m128 rx2 = _mm_add_ps(_mm_mul_ps(ex, rotXx), _mm_mul_ps(ey, rotYx));
+	__m128 ry2 = _mm_add_ps(_mm_mul_ps(ex, rotXy), _mm_mul_ps(ey, rotYy));
 
-	__m128 r2x = _mm_add_ps(_mm_mul_ps(e2x, rot2Xx), _mm_mul_ps(e2y, rot2Yx));
-	__m128 r2y = _mm_add_ps(_mm_mul_ps(e2x, rot2Xy), _mm_mul_ps(e2y, rot2Yy));
+	__m128 ax = _mm_set_ps(p2->rotation.X.x, p2->rotation.Y.x, p1->rotation.X.x, p1->rotation.Y.x);
+	__m128 ay = _mm_set_ps(p2->rotation.X.y, p2->rotation.Y.y, p1->rotation.X.y, p1->rotation.Y.y);
 
 	__m128 absMask = _mm_castsi128_ps(_mm_set1_epi32(0x7fffffff));
-
-	__m128 ax = _mm_and_ps(_mm_set_ps(p2->rotation.Y.x, p2->rotation.X.x, p1->rotation.Y.x, p1->rotation.X.x), absMask);
-	__m128 ay = _mm_and_ps(_mm_set_ps(p2->rotation.Y.y, p2->rotation.X.y, p1->rotation.Y.y, p1->rotation.X.y), absMask);
-	//__m128 ax = _mm_set_ps(p2->rotation.Y.x, p2->rotation.X.x, p1->rotation.Y.x, p1->rotation.X.x);
-	//__m128 ay = _mm_set_ps(p2->rotation.Y.y, p2->rotation.X.y, p1->rotation.Y.y, p1->rotation.X.y);
-
-
-	__m128 r1 = _mm_and_ps(_mm_add_ps(_mm_mul_ps(r1x, ax), _mm_mul_ps(r1y, ay)), absMask);
-	__m128 r2 = _mm_and_ps(_mm_add_ps(_mm_mul_ps(r2x, ax), _mm_mul_ps(r2y, ay)), absMask);
-
-	__m128 r = _mm_add_ps(r1, r2);
+	__m128 r = _mm_and_ps(_mm_add_ps(_mm_mul_ps(rx, ax), _mm_mul_ps(ry, ay)), absMask);
+	__m128 r2 = _mm_and_ps(_mm_add_ps(_mm_mul_ps(rx2, ax), _mm_mul_ps(ry2, ay)), absMask);
+	__m128 e = _mm_set_ps(p2->halfExtent.x, p2->halfExtent.y, p1->halfExtent.x, p1->halfExtent.y);
+	__m128 rs = _mm_add_ps(_mm_max_ps(r, r2), e);
 
 	__m128 d = _mm_and_ps(_mm_add_ps(_mm_mul_ps(dx, ax), _mm_mul_ps(dy, ay)), absMask);
 
-	__m128 res = _mm_cmpgt_ps(d, r);
+	__m128 res = _mm_cmpgt_ps(d, rs);
 	int resMask = _mm_movemask_ps(res);
 
 	return resMask == 0;
 }
 
-bool SISD_OBBCollisionTest(CPolygonPtr p1, CPolygonPtr p2)
+bool CPhysicEngine::SISD_OBBCollisionTest(CPolygonPtr p1, CPolygonPtr p2) const noexcept
 {
 	float ra, rb;
 
@@ -376,7 +366,7 @@ void	CPhysicEngine::CollisionNarrowPhase()
 		collision.polyA = pair.polyA;
 		collision.polyB = pair.polyB;
 		//if (pair.polyA->CheckCollision(*(pair.polyB), collision.point, collision.normal, collision.distance)) 
-		if (SISD_OBBCollisionTest(pair.polyA, pair.polyB))
+		if (SIMD_OBBCollisionTest(pair.polyA, pair.polyB))
 		{
 			m_collidingPairs.push_back(collision);
 		}

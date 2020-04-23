@@ -63,6 +63,9 @@ private:
 	void						CollisionBroadPhase();
 	void						CollisionNarrowPhase();
 
+	bool						SIMD_OBBCollisionTest(CPolygonPtr p1, CPolygonPtr p2) const noexcept;
+	bool						SISD_OBBCollisionTest(CPolygonPtr p1, CPolygonPtr p2) const noexcept;
+
 	bool						m_active = true;
 
 	// Collision detection
