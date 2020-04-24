@@ -31,7 +31,7 @@ protected:
 		params.minSpeed = 1.0f;
 		params.maxSpeed = 3.0f;
 		
-		for (size_t i = 0; i < 20; ++i)
+		for (size_t i = 0; i < 250; ++i)
 		{
 			gVars->pWorld->AddRandomRectangle(params)->density = 0.0f;
 		}

@@ -63,8 +63,9 @@ private:
 	void						CollisionBroadPhase();
 	void						CollisionNarrowPhase();
 
-	bool						SIMD_OBBCollisionTest(CPolygonPtr p1, CPolygonPtr p2) const noexcept;
+	bool						SIMD_Set_OBBCollisionTest(CPolygonPtr p1, CPolygonPtr p2) const noexcept;
 	bool						SISD_OBBCollisionTest(CPolygonPtr p1, CPolygonPtr p2) const noexcept;
+	bool						SIMD_Shuffle_OBBCollisionTest(__m128 pos, __m128 extent, __m128 rotX, __m128 rotY) const noexcept;
 
 	bool						m_active = true;
 
