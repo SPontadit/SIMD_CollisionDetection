@@ -17,16 +17,21 @@ float rand01()
 
 int main(int argc, const char* argv[])
 {
+    // Format for output image is PPM, can be opened with GIMP
     std::ofstream output("out.ppm", std::ios_base::out);
 
     if (!output.is_open())
         return -1;
 
+    // Output image dimensions
     const int width = 200, height = 100;
+    // Number of ray pack sent per pixel in the image
     const int rayPackPerPixel = 16;
 
+    // PPM header
     output << "P3\n" << width << ' ' << height << "\n255\n";
 
+    // Near plane configuration, ratio must match width & height
     const float horizontal = 4.f, vertical = 2.f;
     const float widthIncrement = horizontal / width;
     const float heightIncrement = vertical / height;
@@ -34,21 +39,29 @@ int main(int argc, const char* argv[])
 #ifdef SSE_OFF
     const float lowerLeftX = -horizontal * 0.5f, lowerLeftY = -vertical * 0.5f;
 #else
+    // Near plane lower left corner world coordinates
     const maths::Vector4 lowerLeftX(-horizontal * 0.5f);
     const maths::Vector4 lowerLeftY(-vertical * 0.5f);
 #endif // SEE_ON
+
+    // The primitive we will test rays against
     const maths::Sphere sphere(maths::Vector3(0.f, 0.f, 2.f), 1.f);
 
+    // Colors for the sphere and the background
     const maths::Vector3 red(1.f, 0.f, 0.f), skyBlue(0.529f, 0.808f, 0.922f);
 
-    uint8_t ir, ig, ib;
+    // Intermediate integer values for the generated color
+    // that will be output to the image file
+    int32_t ir, ig, ib;
 
     auto start = std::chrono::system_clock::now();
 
+    // Iterate over all pixels in the order expected by the PPM format
     for (int y = height - 1; y >= 0; y--)
     {
         for (int x = 0; x < width; x++)
         {
+            // Base color is black
             maths::Vector3 color(0.f);
 
 #ifdef SSE_OFF
@@ -70,6 +83,8 @@ int main(int argc, const char* argv[])
 #else
             for (int r = 0; r < rayPackPerPixel; r++)
             {
+                // Initialize the rays originating at the camera's position (0, 0, 0)
+                // and with a random direction that makes them go through the current pixel
                 maths::Vector3Packed directions(
                     lowerLeftX + maths::Vector4(x + rand01(), x + rand01(), x + rand01(), x + rand01()) * widthIncrement,
                     lowerLeftY + maths::Vector4(y + rand01(), y + rand01(), y + rand01(), y + rand01()) * heightIncrement,
@@ -82,18 +97,22 @@ int main(int argc, const char* argv[])
                     directions
                 );
 
+                // Get the number of rays in the pack that have hit the sphere and
+                // blend between the sphere and background colors with this ratio
                 int hitCount = sphere.hit(rays);
                 color += lerp(skyBlue, red, hitCount / 4.0f);
             }
 
+            // Normalize the pixel color by the number or ray pack sent
             color /= (float)rayPackPerPixel;
 #endif // SSE_OFF
 
-            ir = (uint8_t)(255.99f * color.r);
-            ig = (uint8_t)(255.99f * color.g);
-            ib = (uint8_t)(255.99f * color.b);
+            // Output the color to the file as expected by the PPM fromat
+            ir = (int32_t)(255.99f * color.r);
+            ig = (int32_t)(255.99f * color.g);
+            ib = (int32_t)(255.99f * color.b);
 
-            output << (int32_t)ir << ' ' << (int32_t)ig << ' ' << (int32_t)ib << '\n';
+            output << ir << ' ' << ig << ' ' << ib << '\n';
         }
     }
 
@@ -101,6 +120,7 @@ int main(int argc, const char* argv[])
     long long duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
     std::cout << (duration / 1000.f) << " seconds" << std::endl;
 
+    // Close the output file
     output.close();
 
     return 0;
