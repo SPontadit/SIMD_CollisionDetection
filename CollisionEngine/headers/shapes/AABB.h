@@ -6,22 +6,6 @@
 #include <vector>
 #include <smmintrin.h>
 
-struct PackedAABB
-{
-    PackedAABB() noexcept
-        : minimumX(_mm_set_ps1(FLT_MAX)), minimumY(_mm_set_ps1(FLT_MAX)),
-        maximumX(_mm_set_ps1(FLT_MIN)), maximumY(_mm_set_ps1(FLT_MIN)) { }
-
-    PackedAABB(__m128 minX, __m128 minY, __m128 maxX, __m128 maxY) noexcept
-        : minimumX(minX), minimumY(minY), maximumX(maxX), maximumY(maxY) { }
-
-    __m128 minimumX;
-    __m128 minimumY;
-    __m128 maximumX;
-    __m128 maximumY;
-};
-
-
 struct AABB
 {
     constexpr AABB() noexcept
@@ -44,7 +28,25 @@ struct AABB
     static void DrawWorld(const AABB& A) noexcept;
     static float GetSurface(const std::vector<AABB>& aabbs) noexcept;
     static AABB GetSurrounding(const std::vector<AABB>& aabbs) noexcept;
-    static int Intersect(const PackedAABB test, const PackedAABB node) noexcept;
+};
+
+struct PackedAABB
+{
+    PackedAABB() noexcept
+        : minimumX(_mm_set_ps1(FLT_MAX)), minimumY(_mm_set_ps1(FLT_MAX)),
+        maximumX(_mm_set_ps1(FLT_MIN)), maximumY(_mm_set_ps1(FLT_MIN)) { }
+
+    PackedAABB(__m128 minX, __m128 minY, __m128 maxX, __m128 maxY) noexcept
+        : minimumX(minX), minimumY(minY), maximumX(maxX), maximumY(maxY) { }
+
+    PackedAABB(const AABB& toPack) noexcept;
+
+    __m128 minimumX;
+    __m128 minimumY;
+    __m128 maximumX;
+    __m128 maximumY;
+
+    static int Intersect(const PackedAABB& a, const PackedAABB& b) noexcept;
 };
 
 struct Leaf

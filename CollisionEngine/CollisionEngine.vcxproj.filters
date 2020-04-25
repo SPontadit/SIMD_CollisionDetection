@@ -118,6 +118,9 @@
     <ClInclude Include="headers\shapes\AABB.h">
       <Filter>Headers\Shapes</Filter>
     </ClInclude>
+    <ClInclude Include="headers\physics\BroadPhaseAABBTree.h">
+      <Filter>Headers\Physics</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="sources\scenes\SceneManager.cpp">
@@ -155,6 +158,9 @@
     </ClCompile>
     <ClCompile Include="sources\shapes\AABB.cpp">
       <Filter>Sources\Shapes</Filter>
+    </ClCompile>
+    <ClCompile Include="sources\physics\BroadPhaseAABBTree.cpp">
+      <Filter>Sources\Physics</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

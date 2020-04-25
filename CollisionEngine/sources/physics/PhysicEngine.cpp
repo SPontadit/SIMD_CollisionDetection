@@ -9,7 +9,7 @@
 #include "Timer.h"
 
 #include "physics/BroadPhase.h"
-#include "physics/BroadPhaseBrut.h"
+#include "physics/BroadPhaseAABBTree.h"
 
 
 void	CPhysicEngine::Reset()
@@ -22,7 +22,7 @@ void	CPhysicEngine::Reset()
 
 	m_active = true;
 
-	m_broadPhase = new CBroadPhaseBrut();
+	m_broadPhase = new CBroadPhaseAABBTree();
 }
 
 void	CPhysicEngine::Activate(bool active)

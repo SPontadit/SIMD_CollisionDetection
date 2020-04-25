@@ -200,6 +200,7 @@ Xcopy "$(SolutionDir)Libs\glew\bin\Release\$(Platform)\glew32.dll" "$(OutputPath
     <ClInclude Include="headers\GlobalVariables.h" />
     <ClInclude Include="headers\Maths.h" />
     <ClInclude Include="headers\physics\BroadPhase.h" />
+    <ClInclude Include="headers\physics\BroadPhaseAABBTree.h" />
     <ClInclude Include="headers\physics\BroadPhaseBrut.h" />
     <ClInclude Include="headers\physics\PhysicEngine.h" />
     <ClInclude Include="headers\render\Renderer.h" />
@@ -221,6 +222,7 @@ Xcopy "$(SolutionDir)Libs\glew\bin\Release\$(Platform)\glew32.dll" "$(OutputPath
     <ClCompile Include="sources\GlobaleVariables.cpp" />
     <ClCompile Include="sources\main.cpp" />
     <ClCompile Include="sources\Maths.cpp" />
+    <ClCompile Include="sources\physics\BroadPhaseAABBTree.cpp" />
     <ClCompile Include="sources\physics\PhysicEngine.cpp" />
     <ClCompile Include="sources\render\Renderer.cpp" />
     <ClCompile Include="sources\render\SDLRenderWindow.cpp" />

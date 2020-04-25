@@ -51,6 +51,8 @@ public:
 
 	void AddLocalAABB(const AABB& aabb);
 	void RemoveLocalAABB(size_t index);
+	const AABB& GetWorldAABB(size_t index) const { return m_worldAABBs[index]; }
+	const Node4* GetBVH4Nodes() const { return m_bvh4Nodes.data(); }
 
 	bool useSAH = true;
 

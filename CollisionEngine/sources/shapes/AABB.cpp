@@ -139,16 +139,25 @@ AABB AABB::GetSurrounding(const std::vector<AABB>& aabbs) noexcept
 	return AABB(surround);
 }
 
-int AABB::Intersect(const PackedAABB test, const PackedAABB node) noexcept
+int PackedAABB::Intersect(const PackedAABB& a, const PackedAABB& b) noexcept
 {
-    __m128 r0 = _mm_cmplt_ps(test.maximumX, node.minimumX);
-    __m128 r1 = _mm_cmpgt_ps(test.minimumX, node.maximumX);
-    __m128 r2 = _mm_cmplt_ps(test.maximumY, node.minimumY);
-    __m128 r3 = _mm_cmpgt_ps(test.minimumY, node.maximumY);
+    const __m128 signMask = _mm_set_ps1(-0.f);
+    __m128 r0 = _mm_cmplt_ps(_mm_xor_ps(a.maximumX, signMask), b.minimumX);
+    __m128 r1 = _mm_cmpgt_ps(a.minimumX, _mm_xor_ps(b.maximumX, signMask));
+    __m128 r2 = _mm_cmplt_ps(_mm_xor_ps(a.maximumY, signMask), b.minimumY);
+    __m128 r3 = _mm_cmpgt_ps(a.minimumY, _mm_xor_ps(b.maximumY, signMask));
     
-    int mask = _mm_movemask_ps(_mm_or_ps(_mm_or_ps(_mm_or_ps(r0, r1), r2), r3));
+    int mask = _mm_movemask_ps(_mm_or_ps(_mm_or_ps(r0, r1), _mm_or_ps(r2, r3)));
     
     return ~mask & 0xF;
+}
+
+PackedAABB::PackedAABB(const AABB& toPack) noexcept
+{
+    minimumX = _mm_shuffle_ps(toPack.reg, toPack.reg, _MM_SHUFFLE(0, 0, 0, 0));
+    minimumY = _mm_shuffle_ps(toPack.reg, toPack.reg, _MM_SHUFFLE(1, 1, 1, 1));
+    maximumX = _mm_shuffle_ps(toPack.reg, toPack.reg, _MM_SHUFFLE(2, 2, 2, 2));
+    maximumY = _mm_shuffle_ps(toPack.reg, toPack.reg, _MM_SHUFFLE(3, 3, 3, 3));
 }
 
 void Node4::SetAABB(size_t index, const AABB& aabb) noexcept
