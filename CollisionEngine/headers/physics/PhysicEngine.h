@@ -58,8 +58,11 @@ private:
 	friend class CPenetrationVelocitySolver;
 
 	void						BuildAABBTree();
-	void						BuildAABBTree_Internal(Node** tree, std::vector<AABB>& aabbs);
-	Node4*						BVH2ToBVH4(Node* node2);
+	int32_t						BVH2Recurse(Node2* nodes, int32_t& newNodeIndex, Leaf* xSortedLeaves, Leaf* ySortedLeaves, size_t leafCount);
+	int32_t						BVH2ToBVH4(Node2* bvh2Nodes, int32_t currentNode2Index, Node4* bvh4Nodes, int32_t& newNode4Index);
+	static void					DrawBVH2(const Node2* nodes, const size_t nodeCount);
+	static void					DrawBVH4(const Node4* nodes, const size_t nodeCount);
+
 	void						CollisionBroadPhase();
 	void						CollisionNarrowPhase();
 
@@ -76,6 +79,10 @@ private:
 
 	std::vector<AABB> m_localAABBs;
 	std::vector<AABB> m_worldAABBs;
+	std::vector<Leaf> m_xSortedLeaves;
+	std::vector<Leaf> m_ySortedLeaves;
+	std::vector<Node2> m_bvh2Nodes;
+	std::vector<Node4> m_bvh4Nodes;
 };
 
 #endif

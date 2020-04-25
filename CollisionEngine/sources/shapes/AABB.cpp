@@ -164,3 +164,28 @@ AABB Node4::GetAABB(size_t index) const noexcept
     return AABB({ packedAABBs.minimumX.m128_f32[index], packedAABBs.minimumY.m128_f32[index] },
                 { packedAABBs.maximumX.m128_f32[index], packedAABBs.maximumY.m128_f32[index] });
 }
+
+AABB Leaf::GetSurroundingAABB(const Leaf* leaves, size_t leafCount) noexcept
+{
+    __m128 surround = leaves[0].aabb.reg;
+    for (size_t i = 1; i < leafCount; i++)
+        surround = _mm_min_ps(surround, leaves[i].aabb.reg);
+
+    return AABB(surround);
+}
+
+int Leaf::SortCenterX(const void* a, const void* b) noexcept
+{
+    const Leaf* leafA = static_cast<const Leaf*>(a);
+    const Leaf* leafB = static_cast<const Leaf*>(b);
+
+    return leafA->aabb.minimum.x - leafA->aabb.maximum.x < leafB->aabb.minimum.x - leafB->aabb.maximum.x;
+}
+
+int Leaf::SortCenterY(const void* a, const void* b) noexcept
+{
+    const Leaf* leafA = static_cast<const Leaf*>(a);
+    const Leaf* leafB = static_cast<const Leaf*>(b);
+
+    return leafA->aabb.minimum.y - leafA->aabb.maximum.y < leafB->aabb.minimum.y - leafB->aabb.maximum.y;
+}

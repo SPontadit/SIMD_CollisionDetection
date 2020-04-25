@@ -73,153 +73,149 @@ void CPhysicEngine::RemoveLocalAABB(size_t index)
 	m_localAABBs.pop_back();
 }
 
-void DrawTree(Node* tree)
+void CPhysicEngine::DrawBVH2(const Node2* nodes, const size_t nodeCount)
 {
-	if (tree != nullptr)
+	for (size_t i = 0; i < nodeCount; i++)
 	{
-		AABB::DrawWorld(tree->aabb);
-
-		if (tree->isLeaf == false)
-		{
-			DrawTree(tree->leftNode);
-			DrawTree(tree->rightNode);
-		}
+		AABB::DrawWorld(nodes[i].childAABBs[0]);
+		AABB::DrawWorld(nodes[i].childAABBs[1]);
 	}
 }
 
-void DrawTree4(Node4* node)
+void CPhysicEngine::DrawBVH4(const Node4* nodes, const size_t nodeCount)
 {
-	if (node == nullptr)
-		return;
-
-	for (size_t i = 0; i < 4; i++)
+	for (size_t i = 0; i < nodeCount; i++)
 	{
-		AABB::DrawWorld(node->GetAABB(i));
-
-		Node4* child = node->children[i];
-		if (child != nullptr)
-			DrawTree4(child);
+		if (nodes[i].children[0].index != -1) AABB::DrawWorld(nodes[i].GetAABB(0));
+		if (nodes[i].children[1].index != -1) AABB::DrawWorld(nodes[i].GetAABB(1));
+		if (nodes[i].children[2].index != -1) AABB::DrawWorld(nodes[i].GetAABB(2));
+		if (nodes[i].children[3].index != -1) AABB::DrawWorld(nodes[i].GetAABB(3));
 	}
 }
 
 void	CPhysicEngine::BuildAABBTree()
 {
-	m_worldAABBs.clear();
+	const size_t objectCount = m_localAABBs.size();
 
-	const int aabbSize = m_localAABBs.size();
+	m_worldAABBs.resize(objectCount);
+	m_xSortedLeaves.resize(objectCount);
+	m_ySortedLeaves.resize(objectCount);
 
-
-	for (size_t i = 0; i < aabbSize; i++)
+	for (size_t i = 0; i < objectCount; i++)
 	{
 		CPolygonPtr poly = gVars->pWorld->GetPolygon(i);
 
 		AABB worldAABB = m_localAABBs[i].Transform(poly->position, poly->rotation);
-		m_worldAABBs.push_back(worldAABB);
 
-		//AABB::DrawWorld(m_worldAABBs[i]);
+		m_worldAABBs[i] = worldAABB;
+		m_ySortedLeaves[i] = m_xSortedLeaves[i] = Leaf(worldAABB, i);
 	}
 
-	Node* tree = new Node();
+	size_t nodeCount = objectCount  - 1;
+	m_bvh2Nodes.resize(nodeCount);
+	m_bvh4Nodes.resize(nodeCount);
 
-	// Reuse pointer ?
-	BuildAABBTree_Internal(&tree, std::vector<AABB>(m_worldAABBs.begin(), m_worldAABBs.end()));
+	// Build BVH2
+	int32_t newNodeIndex = 0;
+	BVH2Recurse(m_bvh2Nodes.data(), newNodeIndex, m_xSortedLeaves.data(), m_ySortedLeaves.data(), objectCount);
+
+	//if (gVars->bDebug)
+	//	DrawBVH2(bvh2Nodes, nodeCount);
 
 	// Convert BVH2 to BVH4
-	Node4* tree4 = BVH2ToBVH4(tree);
+	newNodeIndex = 0;
+	BVH2ToBVH4(m_bvh2Nodes.data(), 0, m_bvh4Nodes.data(), newNodeIndex);
 
-	//DrawTree4(tree4);
-	
-
-	/*AABB surrender(_mm_min_ps(m_worldAABBs[0].reg, m_worldAABBs[1].reg));
-
-
-	__m128 minX = _mm_set_ps( m_worldAABBs[0].minimum.x,  m_worldAABBs[1].minimum.x,  m_worldAABBs[2].minimum.x,  m_worldAABBs[3].minimum.x);
-	__m128 minY = _mm_set_ps( m_worldAABBs[0].minimum.y,  m_worldAABBs[1].minimum.y,  m_worldAABBs[2].minimum.y,  m_worldAABBs[3].minimum.y);
-	__m128 maxX = _mm_set_ps(-m_worldAABBs[0].maximum.x, -m_worldAABBs[1].maximum.x, -m_worldAABBs[2].maximum.x, -m_worldAABBs[3].maximum.x);
-	__m128 maxY = _mm_set_ps(-m_worldAABBs[0].maximum.y, -m_worldAABBs[1].maximum.y, -m_worldAABBs[2].maximum.y, -m_worldAABBs[3].maximum.y);
-
-	__m128 testMinX = _mm_set_ps1( m_worldAABBs[4].minimum.x);
-	__m128 testMinY = _mm_set_ps1( m_worldAABBs[4].minimum.y);
-	__m128 testMaxX = _mm_set_ps1(-m_worldAABBs[4].maximum.x);
-	__m128 testMaxY = _mm_set_ps1(-m_worldAABBs[4].maximum.y);
-
-	PackedAABB node = PackedAABB(minX, minY, maxX, maxY);
-	PackedAABB test = PackedAABB(testMinX, testMinY, testMaxX, testMaxY);
-
-	std::cout << AABB::Intersect(test, node) << std::endl;*/
+	if (gVars->bDebug)
+		DrawBVH4(m_bvh4Nodes.data(), newNodeIndex);
 }
 
-void CPhysicEngine::BuildAABBTree_Internal(Node** tree, std::vector<AABB>& aabbs)
+int32_t CPhysicEngine::BVH2Recurse(Node2* nodes, int32_t& newNodeIndex, Leaf* xSortedLeaves, Leaf* ySortedLeaves, size_t leafCount)
 {
-	size_t aabbCount = aabbs.size();
+	int32_t nodeIndex = newNodeIndex++;
+	Node2* node = new(nodes + nodeIndex) Node2();
 
-	Node* node = new Node();
-	*tree = node;
+	std::qsort(xSortedLeaves, leafCount, sizeof(Leaf), Leaf::SortCenterX);
+	std::qsort(ySortedLeaves, leafCount, sizeof(Leaf), Leaf::SortCenterY);
 
-	node->aabb = AABB::GetSurrounding(aabbs);
+	const int frontCount = leafCount / 2;
+	const int backCount = leafCount - frontCount;
 
-	if (aabbCount <= 1)
+	const AABB xFront = Leaf::GetSurroundingAABB(xSortedLeaves, frontCount);
+	const AABB xBack = Leaf::GetSurroundingAABB(xSortedLeaves + frontCount, backCount);
+	const AABB yFront = Leaf::GetSurroundingAABB(ySortedLeaves, frontCount);
+	const AABB yBack = Leaf::GetSurroundingAABB(ySortedLeaves + frontCount, backCount);
+
+	const float xSAH = xFront.Surface() + xBack.Surface();
+	const float ySAH = yFront.Surface() + yBack.Surface();
+
+	if (xSAH < ySAH)
 	{
-		node->isLeaf = true;
-		return;
+		memcpy(ySortedLeaves, xSortedLeaves, leafCount * sizeof(Leaf));
+
+		node->childAABBs[0] = xFront;
+		node->childAABBs[1] = xBack;
+
+		if (frontCount > 1)
+			node->children[0].index = BVH2Recurse(nodes, newNodeIndex, xSortedLeaves, ySortedLeaves, frontCount);
+		else
+		{
+			node->children[0].index = xSortedLeaves->polyIndex;
+			node->children[0].isLeaf = true;
+		}
+
+		if (backCount > 1)
+			node->children[1].index = BVH2Recurse(nodes, newNodeIndex, xSortedLeaves + frontCount, ySortedLeaves + frontCount, backCount);
+		else
+		{
+			node->children[1].index = xSortedLeaves[frontCount].polyIndex;
+			node->children[1].isLeaf = true;
+		}
 	}
 	else
 	{
-		node->isLeaf = false;
+		memcpy(xSortedLeaves, ySortedLeaves, leafCount * sizeof(Leaf));
 
-		std::vector<AABB> xSortedAABB(std::move(aabbs));
-		std::vector<AABB> ySortedAABB(xSortedAABB);
-		AABB* xSort, ySort;
+		node->childAABBs[0] = yFront;
+		node->childAABBs[1] = yBack;
 
-		std::sort(xSortedAABB.begin(), xSortedAABB.end(), [](AABB& a, AABB& b)
-			{
-				return ((a.minimum.x - a.maximum.x) * 0.5f) < ((b.minimum.x - b.maximum.x) * 0.5f);
-			});
-
-		std::sort(ySortedAABB.begin(), ySortedAABB.end(), [](AABB& a, AABB& b)
-			{
-				return ((a.minimum.y - a.maximum.y) * 0.5f) < ((b.minimum.y - b.maximum.y) * 0.5f);
-			});
-
-		const int middle = aabbCount / 2;
-
-		std::vector<AABB> backX(std::make_move_iterator(xSortedAABB.cbegin()), std::make_move_iterator(xSortedAABB.cbegin() + middle));
-		std::vector<AABB> frontX(std::make_move_iterator(xSortedAABB.cbegin() + middle), std::make_move_iterator(xSortedAABB.cend()));
-
-		std::vector<AABB> backY(std::make_move_iterator(ySortedAABB.cbegin()), std::make_move_iterator(ySortedAABB.cbegin() + middle));
-		std::vector<AABB> frontY(std::make_move_iterator(ySortedAABB.cbegin() + middle), std::make_move_iterator(ySortedAABB.cend()));
-
-
-		float SAH_X = AABB::GetSurface(backX) + AABB::GetSurface(frontX);
-		float SAH_Y = AABB::GetSurface(backY) + AABB::GetSurface(frontY);
-
-		if (SAH_X < SAH_Y)
-		{
-			BuildAABBTree_Internal(&(node->leftNode), std::move(backX));
-			BuildAABBTree_Internal(&(node->rightNode), std::move(frontX));
-		}
+		if (frontCount > 1)
+			node->children[0].index = BVH2Recurse(nodes, newNodeIndex, xSortedLeaves, ySortedLeaves, frontCount);
 		else
 		{
-			BuildAABBTree_Internal(&(node->leftNode), std::move(backY));
-			BuildAABBTree_Internal(&(node->rightNode), std::move(frontY));
+			node->children[0].index = ySortedLeaves->polyIndex;
+			node->children[0].isLeaf = true;
+		}
+
+		if (backCount > 1)
+			node->children[1].index = BVH2Recurse(nodes, newNodeIndex, xSortedLeaves + frontCount, ySortedLeaves + frontCount, backCount);
+		else
+		{
+			node->children[1].index = ySortedLeaves[frontCount].polyIndex;
+			node->children[1].isLeaf = true;
 		}
 	}
+
+	return nodeIndex;
 }
 
-Node4* CPhysicEngine::BVH2ToBVH4(Node* node2)
+int32_t CPhysicEngine::BVH2ToBVH4(Node2* bvh2Nodes, int32_t currentNode2Index, Node4* bvh4Nodes, int32_t& newNode4Index)
 {
-	if (node2->isLeaf)
-		return nullptr;
+	int32_t node4Index = newNode4Index++;
+	Node4* node4 = new(bvh4Nodes + node4Index) Node4;
 
-	Node4* node4 = new Node4;
+	Node2* node2 = bvh2Nodes + currentNode2Index;
 
-	Node* nodes[4];
+	ChildID childrenTemp[4];
+	float areas[4];
 
-	nodes[0] = node2->leftNode;
-	node4->SetAABB(0, node2->leftNode->aabb);
+	childrenTemp[0] = node2->children[0];
+	areas[0] = node2->childAABBs[0].Surface();
+	node4->SetAABB(0, node2->childAABBs[0]);
 
-	nodes[1] = node2->rightNode;
-	node4->SetAABB(1, node2->rightNode->aabb);
+	childrenTemp[1] = node2->children[1];
+	areas[1] = node2->childAABBs[0].Surface();
+	node4->SetAABB(1, node2->childAABBs[1]);
 
 	size_t childCount = 2;
 
@@ -230,10 +226,10 @@ Node4* CPhysicEngine::BVH2ToBVH4(Node* node2)
 
 		for (size_t i = 0; i < childCount; i++)
 		{
-			if (nodes[i]->isLeaf)
+			if (childrenTemp[i].isLeaf)
 				continue;
 
-			float area = nodes[i]->aabb.Surface();
+			float area = areas[i];
 			if (area > bestArea)
 			{
 				bestArea = area;
@@ -244,19 +240,27 @@ Node4* CPhysicEngine::BVH2ToBVH4(Node* node2)
 		if (bestIdx < 0)
 			break;
 
-		Node* bestNode = nodes[bestIdx];
-		nodes[bestIdx] = bestNode->leftNode;
-		node4->SetAABB(bestIdx, bestNode->leftNode->aabb);
-		nodes[childCount] = bestNode->rightNode;
-		node4->SetAABB(childCount, bestNode->rightNode->aabb);
+		Node2* bestNode = bvh2Nodes + childrenTemp[bestIdx].index;
+
+		childrenTemp[bestIdx] = bestNode->children[0];
+		areas[bestIdx] = bestNode->childAABBs[0].Surface();
+		node4->SetAABB(bestIdx, bestNode->childAABBs[0]);
+
+		childrenTemp[childCount] = bestNode->children[1];
+		areas[childCount] = bestNode->childAABBs[1].Surface();
+		node4->SetAABB(childCount, bestNode->childAABBs[1]);
 
 		childCount++;
 	}
 
 	for (size_t i = 0; i < childCount; i++)
-		node4->children[i] = BVH2ToBVH4(nodes[i]);
+	{
+		node4->children[i] = childrenTemp[i];
+		if (!childrenTemp[i].isLeaf)
+			node4->children[i].index = BVH2ToBVH4(bvh2Nodes, childrenTemp[i].index, bvh4Nodes, newNode4Index);
+	}
 
-	return node4;
+	return node4Index;
 }
 
 void	CPhysicEngine::CollisionBroadPhase()

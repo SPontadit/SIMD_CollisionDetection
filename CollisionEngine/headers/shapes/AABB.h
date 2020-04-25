@@ -24,7 +24,7 @@ struct PackedAABB
 
 struct AABB
 {
-    constexpr AABB()
+    constexpr AABB() noexcept
         : minimum(FLT_MAX, FLT_MAX), maximum(FLT_MIN, FLT_MIN) { }
 
     constexpr AABB(const Vec2& minimum, const Vec2& maximum)
@@ -47,27 +47,49 @@ struct AABB
     static int Intersect(const PackedAABB test, const PackedAABB node) noexcept;
 };
 
-
-struct Node
+struct Leaf
 {
-    Node() = default;
-    
-    Node(const std::vector<AABB>& nodes) noexcept;
+    constexpr Leaf() noexcept
+        : aabb(), polyIndex(0) { }
+    Leaf(const AABB& aabb, size_t polyIndex) noexcept
+        : aabb(aabb), polyIndex(polyIndex) { }
 
-    bool isLeaf;
-    Node* leftNode;
-    Node* rightNode;
     AABB aabb;
+    int32_t polyIndex;
+
+    static AABB GetSurroundingAABB(const Leaf* leaves, size_t leafCount) noexcept;
+    static int SortCenterX(const void* a, const void* b) noexcept;
+    static int SortCenterY(const void* a, const void* b) noexcept;
+};
+
+struct ChildID
+{
+    constexpr ChildID() noexcept
+        : index(-1), isLeaf(false) { }
+
+    constexpr ChildID(int32_t index, bool isLeaf)
+        : index(index), isLeaf(isLeaf) { }
+
+    int32_t index : 31;
+    bool isLeaf : 1;
+};
+
+struct Node2
+{
+    constexpr Node2() noexcept
+        : childAABBs{ {}, {} }, children{ { -1, false }, { -1, false } } { }
+
+    AABB childAABBs[2];
+    ChildID children[2];
 };
 
 struct Node4
 {
     Node4() noexcept
-        : packedAABBs(), children{ nullptr, nullptr, nullptr, nullptr }/*, childTypeMask(0)*/ { }
+        : packedAABBs(), children{ { -1, false }, { -1, false }, { -1, false }, { -1, false } } { }
 
     PackedAABB packedAABBs;
-    Node4* children[4];
-    //uint8_t childTypeMask;
+    ChildID children[4];
 
     void SetAABB(size_t index, const AABB& aabb) noexcept;
     AABB GetAABB(size_t index) const noexcept;
