@@ -58,7 +58,7 @@ public:
 	void				Destroy();
 
 	// Physics
-	float				density;
+	float				density[MAX_POLY * 4];
 	Vec2				speed[MAX_POLY*4];
 
 private:

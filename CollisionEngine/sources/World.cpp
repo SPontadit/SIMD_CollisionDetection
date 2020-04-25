@@ -25,6 +25,8 @@ size_t		CWorld::AddRectangle(float width, float height, const Vec2& position)
 
 	polygons.Build(polyIdx, pointsX, pointsY);
 
+	polygons.rotation[polyIdx].SetAngle(0.0f);
+
 	polygons.SetExtent(polyIdx, { halfWidth, halfHeight });
 
 	gVars->pPhysicEngine->AddLocalAABB(AABB({ -halfWidth, -halfHeight}, {halfWidth, halfHeight}));

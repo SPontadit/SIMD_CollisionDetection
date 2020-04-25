@@ -106,11 +106,18 @@ void	CPhysicEngine::BuildAABBTree()
 	for (size_t i = 0; i < objectCount; i++)
 	{
 		size_t arrayIdx = floor(i / 4);
-		//size_t registerIdx = i % 4;
-		constexpr size_t registerIdx = 0;
+		size_t registerIdx = i % 4;
 
+		__m128 pos;
 		// X, X, Y, Y
-		__m128 pos = _mm_shuffle_ps(poly.positionX[arrayIdx], poly.positionY[arrayIdx], _MM_SHUFFLE(registerIdx, registerIdx, registerIdx, registerIdx));
+		if (registerIdx == 0)
+			pos = _mm_shuffle_ps(poly.positionX[arrayIdx], poly.positionY[arrayIdx], _MM_SHUFFLE(0, 0, 0, 0));
+		else if (registerIdx == 1)
+			pos = _mm_shuffle_ps(poly.positionX[arrayIdx], poly.positionY[arrayIdx], _MM_SHUFFLE(1, 1, 1, 1));
+		else if (registerIdx == 2)
+			pos = _mm_shuffle_ps(poly.positionX[arrayIdx], poly.positionY[arrayIdx], _MM_SHUFFLE(2, 2, 2, 2));
+		else if (registerIdx == 3)
+			pos = _mm_shuffle_ps(poly.positionX[arrayIdx], poly.positionY[arrayIdx], _MM_SHUFFLE(3, 3, 3, 3));
 		// X, Y, X, Y
 		pos = _mm_shuffle_ps(pos, pos, _MM_SHUFFLE(2, 0, 2, 0));
 
@@ -478,6 +485,7 @@ bool CPhysicEngine::SIMD_Shuffle_OBBCollisionTest(__m128 pos, __m128 extent, __m
 //	return 1;
 //}
 
+
 void	CPhysicEngine::CollisionNarrowPhase()
 {
 	m_collidingPairs.clear();
@@ -488,68 +496,72 @@ void	CPhysicEngine::CollisionNarrowPhase()
 		SCollision collision;
 		size_t idx1 = pair.polyA;
 		size_t idx2 = pair.polyB;
-		//if (pair.polyA->CheckCollision(*(pair.polyB), collision.point, collision.normal, collision.distance)) 
-
-
-		// Function
-		size_t arrayIdx1 = floor(idx1 / 4);
-		//size_t registerIdx1 = idx1 % 4;
-		size_t arrayIdx2 = floor(idx2 / 4);
-		//size_t registerIdx2 = idx2 % 4;
 		
-		constexpr size_t registerIdx1 = 0;
-		constexpr size_t registerIdx2 = 0;
+		const size_t arrayIdx1 = floor(idx1 / 4);
+		const size_t registerIdx1 = idx1 % 4;
+		const size_t arrayIdx2 = floor(idx2 / 4);
+		const size_t registerIdx2 = idx2 % 4;
+		
+		constexpr int mask0 = _MM_SHUFFLE(0, 0, 0, 0);
+		constexpr int mask1 = _MM_SHUFFLE(1, 1, 1, 1);
+		constexpr int mask2 = _MM_SHUFFLE(2, 2, 2, 2);
+		constexpr int mask3 = _MM_SHUFFLE(3, 3, 3, 3);
+		constexpr int mask[4] = { mask0, mask1, mask2, mask3 };
 
+		__m128 pos1, pos2, extent1, extent2;
+		if (registerIdx1 == 0)
+		{
+			pos1 = _mm_shuffle_ps(poly.positionX[arrayIdx1], poly.positionY[arrayIdx1], mask0);
+			extent1 = _mm_shuffle_ps(poly.halfExtentX[arrayIdx1], poly.halfExtentY[arrayIdx1], mask0);
+		}
+		else if (registerIdx1 == 1)
+		{
+			pos1 = _mm_shuffle_ps(poly.positionX[arrayIdx1], poly.positionY[arrayIdx1], mask1);
+			extent1 = _mm_shuffle_ps(poly.halfExtentX[arrayIdx1], poly.halfExtentY[arrayIdx1], mask1);
+		}
+		else if (registerIdx1 == 2)
+		{
+			pos1 = _mm_shuffle_ps(poly.positionX[arrayIdx1], poly.positionY[arrayIdx1], mask2);
+			extent1 = _mm_shuffle_ps(poly.halfExtentX[arrayIdx1], poly.halfExtentY[arrayIdx1], mask2);
+		}
+		else if (registerIdx1 == 3)
+		{
+			pos1 = _mm_shuffle_ps(poly.positionX[arrayIdx1], poly.positionY[arrayIdx1], mask3);
+			extent1 = _mm_shuffle_ps(poly.halfExtentX[arrayIdx1], poly.halfExtentY[arrayIdx1], mask3);
+		}
 
-		// x1, x1, y1, y1
-		__m128 pos1 = _mm_shuffle_ps(poly.positionX[arrayIdx1], poly.positionY[arrayIdx1], _MM_SHUFFLE(registerIdx1, registerIdx1, registerIdx1, registerIdx1));
-		// x2, x2, y2, y2
-		__m128 pos2 = _mm_shuffle_ps(poly.positionX[arrayIdx2], poly.positionY[arrayIdx2], _MM_SHUFFLE(registerIdx2, registerIdx2, registerIdx2, registerIdx2));
-		//x1, y1, x2, y2
+		if (registerIdx2 == 0)
+		{
+			pos2 = _mm_shuffle_ps(poly.positionX[arrayIdx2], poly.positionY[arrayIdx2], mask0);
+			extent2 = _mm_shuffle_ps(poly.halfExtentX[arrayIdx2], poly.halfExtentY[arrayIdx2], mask0);
+		}
+		else if (registerIdx2 == 1)
+		{
+			pos2 = _mm_shuffle_ps(poly.positionX[arrayIdx2], poly.positionY[arrayIdx2], mask1);
+			extent2 = _mm_shuffle_ps(poly.halfExtentX[arrayIdx2], poly.halfExtentY[arrayIdx2], mask1);
+		}
+		else if (registerIdx2 == 2)
+		{
+			pos2 = _mm_shuffle_ps(poly.positionX[arrayIdx2], poly.positionY[arrayIdx2], mask2);
+			extent2 = _mm_shuffle_ps(poly.halfExtentX[arrayIdx2], poly.halfExtentY[arrayIdx2], mask2);
+		}
+		else if (registerIdx2 == 3)
+		{
+			pos2 = _mm_shuffle_ps(poly.positionX[arrayIdx2], poly.positionY[arrayIdx2], mask3);
+			extent2 = _mm_shuffle_ps(poly.halfExtentX[arrayIdx2], poly.halfExtentY[arrayIdx2], mask3);
+		}
+
 		__m128 pos = _mm_shuffle_ps(pos1, pos2, _MM_SHUFFLE(2, 0, 2, 0));
-
-		// x1, x1, y1, y1
-		__m128 extent1 = _mm_shuffle_ps(poly.halfExtentX[arrayIdx1], poly.halfExtentY[arrayIdx1], _MM_SHUFFLE(registerIdx1, registerIdx1, registerIdx1, registerIdx1));
-		// x2, x2, y2, y2
-		__m128 extent2 = _mm_shuffle_ps(poly.halfExtentX[arrayIdx2], poly.halfExtentY[arrayIdx2], _MM_SHUFFLE(registerIdx2, registerIdx2, registerIdx2, registerIdx2));
-		//x1, y1, x2, y2
 		__m128 extent = _mm_shuffle_ps(extent1, extent2, _MM_SHUFFLE(2, 0, 2, 0));
-
-
-		// x1, y1, x2, y2
-		//__m128 pos = _mm_set_ps(pair.polyB->position.y, pair.polyB->position.x, pair.polyA->position.y, pair.polyA->position.x);
-		// Comme position
-		//__m128 extent = _mm_set_ps(pair.polyB->halfExtent.y, pair.polyB->halfExtent.x, pair.polyA->halfExtent.y, pair.polyA->halfExtent.x);
-
-		// AXx, AXy, AYx, AYy         // BXx, BXy, BYx, BYy
-		// AXx, AYx, AXy, AYy
-		// sys.rotation[idx1]        // sys.rotation[idx2]
 
 
 		__m128 rotX = _mm_shuffle_ps(poly.registerRotation[idx2], poly.registerRotation[idx1], _MM_SHUFFLE(0, 2, 0, 2));
 		__m128 rotY = _mm_shuffle_ps(poly.registerRotation[idx2], poly.registerRotation[idx1], _MM_SHUFFLE(1, 3, 1, 3));
 
-
-		//__m128 pos = _mm_set_ps(pair.polyB->position.y, pair.polyB->position.x, pair.polyA->position.y, pair.polyA->position.x);
-		//__m128 extent = _mm_set_ps(pair.polyB->halfExtent.y, pair.polyB->halfExtent.x, pair.polyA->halfExtent.y, pair.polyA->halfExtent.x);
-		//__m128 rotX = _mm_set_ps(pair.polyA->rotation.X.x, pair.polyA->rotation.Y.x, pair.polyB->rotation.X.x, pair.polyB->rotation.Y.x);
-		//__m128 rotY = _mm_set_ps(pair.polyA->rotation.X.y, pair.polyA->rotation.Y.y, pair.polyB->rotation.X.y, pair.polyB->rotation.Y.y);
 		
 		if (SIMD_Shuffle_OBBCollisionTest(pos, extent, rotX, rotY))
 		{
 			m_collidingPairs.push_back(collision);
 		}
-		//if (SIMD_Set_OBBCollisionTest(pair.polyA, pair.polyB))
-		//{
-		//	m_collidingPairs.push_back(collision);
-		//}
-		//if (SIMD_Set_Shuffle_OBBCollisionTest(pair.polyA, pair.polyB))
-		//{
-		//	m_collidingPairs.push_back(collision);
-		//}
-		//if (SISD_OBBCollisionTest(pair.polyA, pair.polyB))
-		//{
-		//	m_collidingPairs.push_back(collision);
-		//}
 	}
 }

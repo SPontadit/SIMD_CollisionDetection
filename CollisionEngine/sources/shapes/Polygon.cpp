@@ -15,6 +15,7 @@ CPolygon::CPolygon()
 		positionY[i] = zero;
 		halfExtentX[i] = zero;
 		halfExtentY[i] = zero;
+		density[i] = 0.0f;
 		speed[i] = Vec2();
 		m_vertexBufferId[i] = 0;
 	}
@@ -58,11 +59,6 @@ void CPolygon::Draw(const size_t index)
 
 	glPopMatrix();
 }
-
-//size_t	CPolygon::GetIndex() const
-//{
-//	return m_index;
-//}
 
 Vec2 CPolygon::GetPosition(const size_t index) const
 {
@@ -153,8 +149,6 @@ void CPolygon::BindBuffers(const size_t polyIdx)
 	if (m_vertexBufferId[polyIdx] != 0)
 	{
 		glBindBuffer(GL_ARRAY_BUFFER, m_vertexBufferId[polyIdx]);
-
-		auto err = glGetError();
 
 		glEnableClientState(GL_VERTEX_ARRAY);
 		glVertexPointer(3, GL_FLOAT, 0, (void*)0);

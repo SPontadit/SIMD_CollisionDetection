@@ -87,7 +87,6 @@ AABB AABB::Transform(__m128 position, __m128 rotation) const noexcept
     __m128 max = _mm_set_ps(maximum.y, maximum.x, maximum.y, maximum.x);
 
     __m128 rot = _mm_shuffle_ps(rotation, rotation, _MM_SHUFFLE(3, 1, 2, 0));
-    //__m128 rot = _mm_set_ps(rotation.Y.y, rotation.X.y, rotation.Y.x, rotation.X.x);
 
     __m128 e = _mm_mul_ps(min, rot);
     __m128 f = _mm_mul_ps(max, rot);
