@@ -488,27 +488,16 @@ void	CPhysicEngine::CollisionNarrowPhase()
 		{
 			m_collidingPairs.push_back(collision);
 		}
-		if (SIMD_Set_OBBCollisionTest(pair.polyA, pair.polyB));
+		if (SIMD_Set_OBBCollisionTest(pair.polyA, pair.polyB))
 		{
-			m_collidingPairs.push_back(collision);
 			m_collidingPairs.push_back(collision);
 		}
-		if (SIMD_Set_Shuffle_OBBCollisionTest(pair.polyA, pair.polyB));
+		if (SIMD_Set_Shuffle_OBBCollisionTest(pair.polyA, pair.polyB))
 		{
-			m_collidingPairs.push_back(collision);
-			m_collidingPairs.push_back(collision);
-			m_collidingPairs.push_back(collision);
 			m_collidingPairs.push_back(collision);
 		}
 		if (SISD_OBBCollisionTest(pair.polyA, pair.polyB))
 		{
-			m_collidingPairs.push_back(collision);
-			m_collidingPairs.push_back(collision);
-			m_collidingPairs.push_back(collision);
-			m_collidingPairs.push_back(collision);
-			m_collidingPairs.push_back(collision);
-			m_collidingPairs.push_back(collision);
-			m_collidingPairs.push_back(collision);
 			m_collidingPairs.push_back(collision);
 		}
 	}
