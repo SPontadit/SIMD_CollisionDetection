@@ -95,9 +95,15 @@ void CPhysicEngine::DrawBVH4(const Node4* nodes, const size_t nodeCount)
 
 void	CPhysicEngine::BuildAABBTree()
 {
+	// We use the std::vector class for easy memory management but pass pointers to the
+	// BVH construction functions to use the lighter pointer syntax compared to iterators
+
 	const size_t objectCount = m_localAABBs.size();
 
+	// Contains the world AABBs of all polygons in the same order as the polygons themselves
 	m_worldAABBs.resize(objectCount);
+
+	// Contain Leaf structures, they store a world AABB and the index of the polygon it belongs to
 	m_xSortedLeaves.resize(objectCount);
 	m_ySortedLeaves.resize(objectCount);
 
@@ -111,6 +117,7 @@ void	CPhysicEngine::BuildAABBTree()
 		m_ySortedLeaves[i] = m_xSortedLeaves[i] = Leaf(worldAABB, i);
 	}
 
+	// The tree doesn't contains the leaves so the number of nodes is number of leaves -1
 	size_t nodeCount = objectCount  - 1;
 	m_bvh2Nodes.resize(nodeCount);
 	m_bvh4Nodes.resize(nodeCount);
@@ -122,7 +129,7 @@ void	CPhysicEngine::BuildAABBTree()
 	//if (gVars->bDebug)
 	//	DrawBVH2(bvh2Nodes, nodeCount);
 
-	// Convert BVH2 to BVH4
+	// Build BVH4 from BVH2
 	newNodeIndex = 0;
 	BVH2ToBVH4(m_bvh2Nodes.data(), 0, m_bvh4Nodes.data(), newNodeIndex);
 
@@ -132,40 +139,60 @@ void	CPhysicEngine::BuildAABBTree()
 
 int32_t CPhysicEngine::BVH2Recurse(Node2* nodes, int32_t& newNodeIndex, Leaf* xSortedLeaves, Leaf* ySortedLeaves, size_t leafCount)
 {
+	// Get index for the new node and increment index for recursive calls
 	int32_t nodeIndex = newNodeIndex++;
-	Node2* node = new(nodes + nodeIndex) Node2();
+	// Get pointer to the node we add to the tree
+	Node2* node = nodes + nodeIndex;
 
+	// Sort leaves depending on their center position along the X axis
 	std::qsort(xSortedLeaves, leafCount, sizeof(Leaf), Leaf::SortCenterX);
+	// Sort leaves depending on their center position along the Y axis
 	std::qsort(ySortedLeaves, leafCount, sizeof(Leaf), Leaf::SortCenterY);
 
 	const int frontCount = leafCount / 2;
 	const int backCount = leafCount - frontCount;
 
+	// Compute AABBs surrounding each half of the sorted leaves along both axes
 	const AABB xFront = Leaf::GetSurroundingAABB(xSortedLeaves, frontCount);
 	const AABB xBack = Leaf::GetSurroundingAABB(xSortedLeaves + frontCount, backCount);
 	const AABB yFront = Leaf::GetSurroundingAABB(ySortedLeaves, frontCount);
 	const AABB yBack = Leaf::GetSurroundingAABB(ySortedLeaves + frontCount, backCount);
 
+	// Compute SAH cost for each split
 	const float xSAH = xFront.Surface() + xBack.Surface();
 	const float ySAH = yFront.Surface() + yBack.Surface();
 
+	// Chopse the split with the minimum SAH cost <=> the split
+	// that creates the smallest bounding areas for each half
 	if (xSAH < ySAH)
 	{
+		// Copy the sorted leaves along the chosen axis to the other list
+		// so that recursive calls get the correct halves on both axes
 		memcpy(ySortedLeaves, xSortedLeaves, leafCount * sizeof(Leaf));
 
+		// Store the AABBs of child boxes in the parent node
 		node->childAABBs[0] = xFront;
 		node->childAABBs[1] = xBack;
 
+		// If the front half contains more than one leaf, recurse to create child nodes ...
 		if (frontCount > 1)
+		{
 			node->children[0].index = BVH2Recurse(nodes, newNodeIndex, xSortedLeaves, ySortedLeaves, frontCount);
+			node->children[0].isLeaf = false;
+		}
+		// ... otherwise don't recurse and link to child polygon with the index in the Leaf struct
 		else
 		{
 			node->children[0].index = xSortedLeaves->polyIndex;
 			node->children[0].isLeaf = true;
 		}
 
+		// Same for the back half
 		if (backCount > 1)
+		{
 			node->children[1].index = BVH2Recurse(nodes, newNodeIndex, xSortedLeaves + frontCount, ySortedLeaves + frontCount, backCount);
+			node->children[1].isLeaf = false;
+		}
 		else
 		{
 			node->children[1].index = xSortedLeaves[frontCount].polyIndex;
@@ -174,13 +201,18 @@ int32_t CPhysicEngine::BVH2Recurse(Node2* nodes, int32_t& newNodeIndex, Leaf* xS
 	}
 	else
 	{
+		// Same for the other axis
+
 		memcpy(xSortedLeaves, ySortedLeaves, leafCount * sizeof(Leaf));
 
 		node->childAABBs[0] = yFront;
 		node->childAABBs[1] = yBack;
 
 		if (frontCount > 1)
+		{
 			node->children[0].index = BVH2Recurse(nodes, newNodeIndex, xSortedLeaves, ySortedLeaves, frontCount);
+			node->children[0].isLeaf = false;
+		}
 		else
 		{
 			node->children[0].index = ySortedLeaves->polyIndex;
@@ -188,7 +220,10 @@ int32_t CPhysicEngine::BVH2Recurse(Node2* nodes, int32_t& newNodeIndex, Leaf* xS
 		}
 
 		if (backCount > 1)
+		{
 			node->children[1].index = BVH2Recurse(nodes, newNodeIndex, xSortedLeaves + frontCount, ySortedLeaves + frontCount, backCount);
+			node->children[1].isLeaf = false;
+		}
 		else
 		{
 			node->children[1].index = ySortedLeaves[frontCount].polyIndex;
@@ -196,29 +231,37 @@ int32_t CPhysicEngine::BVH2Recurse(Node2* nodes, int32_t& newNodeIndex, Leaf* xS
 		}
 	}
 
+	// Return the index to the node we created, parent call will store it in its child index
 	return nodeIndex;
 }
 
 int32_t CPhysicEngine::BVH2ToBVH4(Node2* bvh2Nodes, int32_t currentNode2Index, Node4* bvh4Nodes, int32_t& newNode4Index)
 {
+	// Get index for the new node and increment index for recursive calls
 	int32_t node4Index = newNode4Index++;
+	// We use a placement new here to reset the data that was in the node
+	// We do this because contrary to the BVH2 we might not have all children set
 	Node4* node4 = new(bvh4Nodes + node4Index) Node4;
 
+	// Get a pointer to the BVH2 node we are working on
 	Node2* node2 = bvh2Nodes + currentNode2Index;
 
-	ChildID childrenTemp[4];
+	// Store the area values of the child AABBs here so we don't have to extract
+	// the AABBs from the PackedAABB structure every time we need to compute an area
 	float areas[4];
 
-	childrenTemp[0] = node2->children[0];
+	// Initialize the first two children of the BVH4 node with the children of the BVH2 node
+	node4->children[0] = node2->children[0];
 	areas[0] = node2->childAABBs[0].Surface();
 	node4->SetAABB(0, node2->childAABBs[0]);
 
-	childrenTemp[1] = node2->children[1];
+	node4->children[1] = node2->children[1];
 	areas[1] = node2->childAABBs[0].Surface();
 	node4->SetAABB(1, node2->childAABBs[1]);
 
 	size_t childCount = 2;
 
+	// Try to grab as much children as possible from the hierarchy
 	while (childCount < 4)
 	{
 		int64_t bestIdx = -1;
@@ -226,9 +269,14 @@ int32_t CPhysicEngine::BVH2ToBVH4(Node2* bvh2Nodes, int32_t currentNode2Index, N
 
 		for (size_t i = 0; i < childCount; i++)
 		{
-			if (childrenTemp[i].isLeaf)
+			// Skip leaves, we can't get more children from them
+			if (node4->children[i].isLeaf)
 				continue;
 
+			// Compare areas of children already under the BVH4 node, we want to get the largest
+			// one and get its children so that the ratio between the area of the parent AABB and
+			// the sum of the areas of the children AABBs is as large as possible (ie. more empty
+			// space inside an BVH node so that overlap test may fail earlier)
 			float area = areas[i];
 			if (area > bestArea)
 			{
@@ -237,28 +285,36 @@ int32_t CPhysicEngine::BVH2ToBVH4(Node2* bvh2Nodes, int32_t currentNode2Index, N
 			}
 		}
 
+		// If there were only leaves in the children of the BVH4 node, bestIdx is still -1 and we
+		// can't reach deeper in the BVH2 hierarchy so exit here
 		if (bestIdx < 0)
 			break;
 
-		Node2* bestNode = bvh2Nodes + childrenTemp[bestIdx].index;
+		// Get the BVH2 node we chose with the largest area from the children already set ...
+		Node2* bestNode = bvh2Nodes + node4->children[bestIdx].index;
 
-		childrenTemp[bestIdx] = bestNode->children[0];
+		// ... and replace it with its first child
+		node4->children[bestIdx] = bestNode->children[0];
 		areas[bestIdx] = bestNode->childAABBs[0].Surface();
 		node4->SetAABB(bestIdx, bestNode->childAABBs[0]);
 
-		childrenTemp[childCount] = bestNode->children[1];
+		// The second child is a new child for the BVH4 node
+		node4->children[childCount] = bestNode->children[1];
 		areas[childCount] = bestNode->childAABBs[1].Surface();
 		node4->SetAABB(childCount, bestNode->childAABBs[1]);
 
 		childCount++;
 	}
 
+	// Recurse on children that are not leaves, replacing the index they hold that corresponds
+	// to a BVH2 node with the index returned by this function for a BVH4 node
 	for (size_t i = 0; i < childCount; i++)
 	{
-		node4->children[i] = childrenTemp[i];
-		if (!childrenTemp[i].isLeaf)
-			node4->children[i].index = BVH2ToBVH4(bvh2Nodes, childrenTemp[i].index, bvh4Nodes, newNode4Index);
+		if (!node4->children[i].isLeaf)
+			node4->children[i].index = BVH2ToBVH4(bvh2Nodes, node4->children[i].index, bvh4Nodes, newNode4Index);
 	}
+
+	// Leaves children are left untouched, their index is still valid because it points to a polygon
 
 	return node4Index;
 }
@@ -477,7 +533,6 @@ void	CPhysicEngine::CollisionNarrowPhase()
 		SCollision collision;
 		collision.polyA = pair.polyA;
 		collision.polyB = pair.polyB;
-		//if (pair.polyA->CheckCollision(*(pair.polyB), collision.point, collision.normal, collision.distance)) 
 
 		__m128 pos = _mm_set_ps(pair.polyB->position.y, pair.polyB->position.x, pair.polyA->position.y, pair.polyA->position.x);
 		__m128 extent = _mm_set_ps(pair.polyB->halfExtent.y, pair.polyB->halfExtent.x, pair.polyA->halfExtent.y, pair.polyA->halfExtent.x);
