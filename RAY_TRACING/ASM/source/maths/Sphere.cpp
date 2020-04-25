@@ -18,6 +18,9 @@ namespace maths
 
 	int Sphere::hit(const RayPacked& rays) const noexcept
 	{
+		// Algorithm from https://www.iquilezles.org/blog/?p=2411
+		// is done 4 times in parallel in SSE registers
+
 		Vector3Packed center(center.x, center.y, center.z);
 		Vector3Packed oc = rays.origins - center;
 		Vector4 zeroes(0.f);
@@ -27,8 +30,10 @@ namespace maths
 
 		Vector4 discriminant = b * b - c;
 		__m128 discriminantMask = _mm_cmpge_ps(discriminant.sseVal, zeroes.sseVal);
+		// resultMask contains a bit set to 1 for each ray that hits the sphere
 		unsigned int resultMask = _mm_movemask_ps(discriminantMask);
 
+		// Return the number of bits set to 1 to get the number of rays that have hit
 		return __popcnt(resultMask);
 	}
 
