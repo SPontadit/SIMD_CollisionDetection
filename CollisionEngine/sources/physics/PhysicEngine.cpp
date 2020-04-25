@@ -325,49 +325,94 @@ void	CPhysicEngine::CollisionBroadPhase()
 	m_broadPhase->GetCollidingPairsToCheck(m_pairsToCheck);
 }
 
-bool CPhysicEngine::SIMD_Shuffle_OBBCollisionTest(__m128 pos, __m128 extent, __m128 rotX, __m128 rotY) const noexcept
+bool CPhysicEngine::SIMD_Shuffle_OBBCollisionTest(__m128 pos, __m128 extent, __m128 rotXxYx, __m128 rotXyYy) const noexcept
 {
+	/*
+	* This OBB-OBB overlapp test is derived from the algorithm described in
+	* "Real Time Collision Detection" by Christer Ericson. It is a variation
+	* of the SAT algorithm with simplifications allowed by the rectangular
+	* nature of OBBs:
+	* 	- Instead of computing a normal for each hedge of the box we use the
+	* 	  vector base of the OBB coordinate frame which are contained in their
+		  rotation matrices
+	* 	- Because two opposite side of a rectangle are parallel, their
+	* 	  normals are colinear and projections on them are identical in
+	* 	  absolute value, so we can test only two axes per OBB
+	* 	- Projections of an OBB on its vector bases are equal to its
+	* 	  extents so we don't need to compute these
+	*/
+
+	// pos = { poly1.pos.x, poly1.pos.y, poly2.pos.x, poly2.pos.y }
+	// extent = { poly1.extent.x, poly1.extent.y, poly2.extent.x, poly2.extent.y }
+	// rotXxYx = { poly2.rot.X.x, poly2.rot.Y.x, poly1.rot.X.x, poly1.rot.Y.x }
+	// rotXyYy = { poly2.rot.X.y, poly2.rot.Y.y, poly1.rot.X.y, poly1.rot.Y.y }
+
+	// We splat each position component in a single register
 	__m128 p1x = _mm_shuffle_ps(pos, pos, _MM_SHUFFLE(0, 0, 0, 0));
 	__m128 p1y = _mm_shuffle_ps(pos, pos, _MM_SHUFFLE(1, 1, 1, 1));
 	__m128 p2x = _mm_shuffle_ps(pos, pos, _MM_SHUFFLE(2, 2, 2, 2));
 	__m128 p2y = _mm_shuffle_ps(pos, pos, _MM_SHUFFLE(3, 3, 3, 3));
 
-	__m128 dx = _mm_sub_ps(p1x, p2x);
-	__m128 dy = _mm_sub_ps(p1y, p2y);
+	// We compute the translation between the two polygons centers
+	__m128 tx = _mm_sub_ps(p1x, p2x);
+	__m128 ty = _mm_sub_ps(p1y, p2y);
 
+	// ex = { poly2.extent.x, poly2.extent.x, poly1.extent.x, poly1.extent.x }
+	// ey = { poly2.extent.y, poly2.extent.y, poly1.extent.y, poly1.extent.y }
 	__m128 ex = _mm_shuffle_ps(extent, extent, _MM_SHUFFLE(0, 0, 2, 2));
 	__m128 ey = _mm_shuffle_ps(extent, extent, _MM_SHUFFLE(1, 1, 3, 3));
 
-	__m128 tmp_e = _mm_blend_ps(ex, ey, 0b1010);
-	__m128 e = _mm_shuffle_ps(tmp_e, tmp_e, _MM_SHUFFLE(0, 1, 2, 3));
+	// e = { poly1.extent.y, poly1.extent.x, poly2.extent.y, poly2.extent.x }
+	__m128 e = _mm_blend_ps(ex, ey, 0b1010);
+	e = _mm_shuffle_ps(e, e, _MM_SHUFFLE(0, 1, 2, 3));
 	
-	__m128 rotXx = _mm_shuffle_ps(rotX, rotX, _MM_SHUFFLE(3, 3, 1, 1));
-	__m128 rotXy = _mm_shuffle_ps(rotY, rotY, _MM_SHUFFLE(3, 3, 1, 1));
-	__m128 rotYx = _mm_shuffle_ps(rotX, rotX, _MM_SHUFFLE(2, 2, 0, 0));
-	__m128 rotYy = _mm_shuffle_ps(rotY, rotY, _MM_SHUFFLE(2, 2, 0, 0));
+	__m128 rotXx = _mm_shuffle_ps(rotXxYx, rotXxYx, _MM_SHUFFLE(1, 1, 3, 3));
+	__m128 rotXy = _mm_shuffle_ps(rotXyYy, rotXyYy, _MM_SHUFFLE(1, 1, 3, 3));
+	__m128 rotYx = _mm_shuffle_ps(rotXxYx, rotXxYx, _MM_SHUFFLE(0, 0, 2, 2));
+	__m128 rotYy = _mm_shuffle_ps(rotXyYy, rotXyYy, _MM_SHUFFLE(0, 0, 2, 2));
 
+	// rx and ry contain the extents of the 2 OBBs transformed in world space
 	__m128 rx = _mm_add_ps(_mm_mul_ps(ex, rotXx), _mm_mul_ps(ey, rotYx));
 	__m128 ry = _mm_add_ps(_mm_mul_ps(ex, rotXy), _mm_mul_ps(ey, rotYy));
 
+	// Negate the y value to transform the extent (x, -y) in world space and project it too
+	// because in some configuration the (x, y) extent won't give the maximum projection in
+	// world space. Ericson's algorithm doesn't need that because he computes everything in
+	// the coordinate frame of one of the first OBB and has a absolute value of the rotation
+	// matrix to transform the second OBB into the coordinate frame oif the first one. The
+	// transformed extents of an OBB in the other's coordinate frame using that rotation
+	// matrix automatically produces a vector that will have the maximum projection on the
+	// target vector base.
 	ey = _mm_xor_ps(ey, _mm_set_ps1(-0.f));
 
+	// rx2 and ry2 contain the (x, -y) extents transformed in world space
 	__m128 rx2 = _mm_add_ps(_mm_mul_ps(ex, rotXx), _mm_mul_ps(ey, rotYx));
 	__m128 ry2 = _mm_add_ps(_mm_mul_ps(ex, rotXy), _mm_mul_ps(ey, rotYy));
 
-	__m128 ax = _mm_shuffle_ps(rotX, rotX, _MM_SHUFFLE(1, 0, 3, 2));
-	__m128 ay = _mm_shuffle_ps(rotY, rotY, _MM_SHUFFLE(1, 0, 3, 2));
+	// ax and ay contain the axes against which we will project the extents of the boxes
+	__m128 ax = rotXxYx;
+	__m128 ay = rotXyYy;
 
 	__m128 absMask = _mm_castsi128_ps(_mm_set1_epi32(0x7fffffff));
+	// Absolute value of dot product between the extents and the and the axes to find the projection
 	__m128 r = _mm_and_ps(_mm_add_ps(_mm_mul_ps(rx, ax), _mm_mul_ps(ry, ay)), absMask);
+	// Same with the (x, -y) extents
 	__m128 r2 = _mm_and_ps(_mm_add_ps(_mm_mul_ps(rx2, ax), _mm_mul_ps(ry2, ay)), absMask);
 
+	// Sum the maximum projection of one OBB on the vector base of the other
+	// with the extents of the other OBB
 	__m128 rs = _mm_add_ps(_mm_max_ps(r, r2), e);
 
-	__m128 d = _mm_and_ps(_mm_add_ps(_mm_mul_ps(dx, ax), _mm_mul_ps(dy, ay)), absMask);
+	// Compute the projection of the translation vector on the vector bases of the OBBs
+	__m128 t = _mm_and_ps(_mm_add_ps(_mm_mul_ps(tx, ax), _mm_mul_ps(ty, ay)), absMask);
 
-	__m128 res = _mm_cmpgt_ps(d, rs);
+	// Compare the projection of the translation vector with the sum of the projections
+	// of the OBBs. If it is greater, then we have found a seeparating axis and the resMask
+	// will contain et bit set to 1 for this axis
+	__m128 res = _mm_cmpgt_ps(t, rs);
 	int resMask = _mm_movemask_ps(res);
 
+	// If no bit set in the mask we had no separatring axis found so the OBBs overlap !
 	return resMask == 0;
 }
 
@@ -536,8 +581,8 @@ void	CPhysicEngine::CollisionNarrowPhase()
 
 		__m128 pos = _mm_set_ps(pair.polyB->position.y, pair.polyB->position.x, pair.polyA->position.y, pair.polyA->position.x);
 		__m128 extent = _mm_set_ps(pair.polyB->halfExtent.y, pair.polyB->halfExtent.x, pair.polyA->halfExtent.y, pair.polyA->halfExtent.x);
-		__m128 rotX = _mm_set_ps(pair.polyA->rotation.X.x, pair.polyA->rotation.Y.x, pair.polyB->rotation.X.x, pair.polyB->rotation.Y.x);
-		__m128 rotY = _mm_set_ps(pair.polyA->rotation.X.y, pair.polyA->rotation.Y.y, pair.polyB->rotation.X.y, pair.polyB->rotation.Y.y);
+		__m128 rotX = _mm_set_ps(pair.polyB->rotation.X.x, pair.polyB->rotation.Y.x, pair.polyA->rotation.X.x, pair.polyA->rotation.Y.x);
+		__m128 rotY = _mm_set_ps(pair.polyB->rotation.X.y, pair.polyB->rotation.Y.y, pair.polyA->rotation.X.y, pair.polyA->rotation.Y.y);
 		
 		if (SIMD_Shuffle_OBBCollisionTest(pos, extent, rotX, rotY))
 		{
