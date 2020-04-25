@@ -141,14 +141,22 @@ AABB AABB::GetSurrounding(const std::vector<AABB>& aabbs) noexcept
 
 int PackedAABB::Intersect(const PackedAABB& a, const PackedAABB& b) noexcept
 {
+    // This is 4 AABB-AABB overlap test done in parallel. We store -max values
+    // for AABBs in world space so negate them here with signMask and a xor.
     const __m128 signMask = _mm_set_ps1(-0.f);
+
+    // Each comparison evaluates to true if the AABBs are separated
     __m128 r0 = _mm_cmplt_ps(_mm_xor_ps(a.maximumX, signMask), b.minimumX);
     __m128 r1 = _mm_cmpgt_ps(a.minimumX, _mm_xor_ps(b.maximumX, signMask));
     __m128 r2 = _mm_cmplt_ps(_mm_xor_ps(a.maximumY, signMask), b.minimumY);
     __m128 r3 = _mm_cmpgt_ps(a.minimumY, _mm_xor_ps(b.maximumY, signMask));
     
+    // Merge results in a single registers, one test evaluating to true is enough
+    // to conclude the AABBs do not overlap so we combine them with a logical or
     int mask = _mm_movemask_ps(_mm_or_ps(_mm_or_ps(r0, r1), _mm_or_ps(r2, r3)));
-    
+
+    // A bit in mask is set to 1 if boxes do not overlap so flip it to have 1s 
+    // where boxes do overlap and clear the remaining bits
     return ~mask & 0xF;
 }
 
