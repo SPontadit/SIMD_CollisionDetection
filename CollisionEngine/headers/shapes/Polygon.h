@@ -39,7 +39,7 @@ public:
 	__m128				halfExtentX[MAX_POLY];
 	__m128				halfExtentY[MAX_POLY];
 
-	void				Build(const size_t polyIdx, const float pointsX[4], const float pointsY[4]);
+	void				Build(const size_t polyIdx, float pointsX[4], float pointsY[4]);
 	void				Draw(const size_t index);
 	//size_t				GetIndex() const;
 	Vec2				GetPosition(const size_t index) const;
@@ -55,17 +55,18 @@ public:
 	bool				IsPointInside(const size_t index, const Vec2& point) const;
 
 	bool				CheckCollision(const CPolygon& poly, Vec2& colPoint, Vec2& colNormal, float& colDist) const;
+	void				Destroy();
 
 	// Physics
 	float				density;
 	Vec2				speed[MAX_POLY*4];
 
 private:
-	void				CreateBuffers(const size_t polyIdx, const float pointsX[4], const float pointsY[4]);
+	void				CreateBuffers(const size_t polyIdx, float pointsX[4], float pointsY[4]);
 	void				BindBuffers(const size_t polyIdx);
 	void				DestroyBuffers(const size_t polyIdx);
 
-	void				BuildLines(const size_t polyIdx, const float pointsX[4], const float pointsY[4]);
+	void				BuildLines(const size_t polyIdx, float pointsX[4], float pointsY[4]);
 
 	GLuint				m_vertexBufferId[MAX_POLY*4];
 	size_t				m_index;

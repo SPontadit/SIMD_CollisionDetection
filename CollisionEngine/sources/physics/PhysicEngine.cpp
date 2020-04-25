@@ -101,7 +101,7 @@ void	CPhysicEngine::BuildAABBTree()
 	m_xSortedLeaves.resize(objectCount);
 	m_ySortedLeaves.resize(objectCount);
 	
-	CPolygon poly = gVars->pWorld->polygons;
+	CPolygon& poly = gVars->pWorld->GetPolygons();
 
 	for (size_t i = 0; i < objectCount; i++)
 	{
@@ -481,7 +481,7 @@ bool CPhysicEngine::SIMD_Shuffle_OBBCollisionTest(__m128 pos, __m128 extent, __m
 void	CPhysicEngine::CollisionNarrowPhase()
 {
 	m_collidingPairs.clear();
-	CPolygon poly = gVars->pWorld->polygons;
+	CPolygon& poly = gVars->pWorld->GetPolygons();
 
 	for (const SPolygonPair& pair : m_pairsToCheck)
 	{

@@ -24,7 +24,7 @@ private:
 		float hWidth = gVars->pRenderer->GetWorldWidth() * 0.5f;
 		float hHeight = gVars->pRenderer->GetWorldHeight() * 0.5f;
 
-		CPolygon polygons = gVars->pWorld->polygons;
+		CPolygon& polygons = gVars->pWorld->GetPolygons();
 
 		gVars->pWorld->ForEachPolygon([&](size_t idx)
 		{

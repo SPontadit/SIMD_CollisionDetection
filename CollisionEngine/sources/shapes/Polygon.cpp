@@ -22,11 +22,15 @@ CPolygon::CPolygon()
 
 CPolygon::~CPolygon()
 {
+}
+
+void CPolygon::Destroy()
+{
 	for (size_t i = 0; i < polyCount; i++)
 		DestroyBuffers(i);
 }
 
-void CPolygon::Build(const size_t polyIdx, const float pointsX[4], const float pointsY[4])
+void CPolygon::Build(const size_t polyIdx, float pointsX[4], float pointsY[4])
 {
 	m_lines[polyIdx].clear();
 
@@ -48,14 +52,9 @@ void CPolygon::Draw(const size_t index)
 
 	// Draw vertices
 	BindBuffers(index);
-	auto err = glGetError();
-
-	glDrawArrays(GL_LINE_LOOP, 0, 8);
-	err = glGetError();
-
+	glDrawArrays(GL_LINE_LOOP, 0, 4);
 	
 	glDisableClientState(GL_VERTEX_ARRAY);
-	err = glGetError();
 
 	glPopMatrix();
 }
@@ -122,7 +121,7 @@ bool	CPolygon::CheckCollision(const CPolygon& poly, Vec2& colPoint, Vec2& colNor
 	return false;
 }
 
-void CPolygon::CreateBuffers(const size_t polyIdx, const float pointsX[4], const float pointsY[4])
+void CPolygon::CreateBuffers(const size_t polyIdx, float pointsX[4], float pointsY[4])
 {
 	DestroyBuffers(polyIdx);
 
@@ -138,16 +137,11 @@ void CPolygon::CreateBuffers(const size_t polyIdx, const float pointsX[4], const
 
 	GLuint id;
 	glGenBuffers(1, &id);
-	auto err = glGetError();
-
 	glBindBuffer(GL_ARRAY_BUFFER, id);
-	err = glGetError();
 
 	glBufferData(GL_ARRAY_BUFFER, sizeof(float) * 3 * pointCount, vertices, GL_STATIC_DRAW);
-	err = glGetError();
 
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
-	err = glGetError();
 
 	m_vertexBufferId[polyIdx] = id;
 
@@ -176,7 +170,7 @@ void CPolygon::DestroyBuffers(const size_t polyIdx)
 	}
 }
 
-void CPolygon::BuildLines(const size_t polyIdx, const float pointsX[4], const float pointsY[4])
+void CPolygon::BuildLines(const size_t polyIdx, float pointsX[4], float pointsY[4])
 {
 	constexpr size_t pointCount = 4;
 

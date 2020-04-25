@@ -132,3 +132,8 @@ void	CWorld::RenderPolygons()
 	for (size_t i = 0; i < polygons.polyCount; ++i)
 		polygons.Draw(i);
 }
+
+CPolygon& CWorld::GetPolygons()
+{
+	return polygons;
+}

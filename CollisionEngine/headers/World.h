@@ -24,6 +24,11 @@ public:
 
 	}
 
+	~CWorld()
+	{
+		polygons.Destroy();
+	}
+
 	size_t			AddRectangle(float width, float height, const Vec2& position);
 	size_t			AddRandomRectangle(const SRandomPolyParams& params);
 
@@ -67,8 +72,10 @@ public:
 	void Update(float frameTime);
 	void RenderPolygons();
 
-	CPolygon polygons;
+	CPolygon& GetPolygons();
+
 protected:
+	CPolygon polygons;
 	//std::vector<CPolygonPtr>	m_polygons;
 	std::vector<CBehaviorPtr>	m_behaviors;
 };
