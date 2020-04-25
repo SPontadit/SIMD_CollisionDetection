@@ -108,7 +108,8 @@
     </Link>
     <PostBuildEvent>
       <Command>Xcopy "$(SolutionDir)Libs\SDL2-2.0.3\lib\$(Platform)\SDL2.dll" "$(OutputPath)" /y
-Xcopy "$(SolutionDir)Libs\glew\bin\Release\$(Platform)\glew32.dll" "$(OutputPath)" /y</Command>
+Xcopy "$(SolutionDir)Libs\glew\bin\Release\$(Platform)\glew32.dll" "$(OutputPath)" /y
+Xcopy "$(ProjectDir)font.ttf" "$(OutputPath)" /y</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -132,7 +133,8 @@ Xcopy "$(SolutionDir)Libs\glew\bin\Release\$(Platform)\glew32.dll" "$(OutputPath
     </Link>
     <PostBuildEvent>
       <Command>Xcopy "$(SolutionDir)Libs\SDL2-2.0.3\lib\$(Platform)\SDL2.dll" "$(OutputPath)" /y
-Xcopy "$(SolutionDir)Libs\glew\bin\Release\$(Platform)\glew32.dll" "$(OutputPath)" /y</Command>
+Xcopy "$(SolutionDir)Libs\glew\bin\Release\$(Platform)\glew32.dll" "$(OutputPath)" /y
+Xcopy "$(ProjectDir)font.ttf" "$(OutputPath)" /y</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -158,7 +160,8 @@ Xcopy "$(SolutionDir)Libs\glew\bin\Release\$(Platform)\glew32.dll" "$(OutputPath
     </Link>
     <PostBuildEvent>
       <Command>Xcopy "$(SolutionDir)Libs\SDL2-2.0.3\lib\$(Platform)\SDL2.dll" "$(OutputPath)" /y
-Xcopy "$(SolutionDir)Libs\glew\bin\Release\$(Platform)\glew32.dll" "$(OutputPath)" /y</Command>
+Xcopy "$(SolutionDir)Libs\glew\bin\Release\$(Platform)\glew32.dll" "$(OutputPath)" /y
+Xcopy "$(ProjectDir)font.ttf" "$(OutputPath)" /y</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -184,7 +187,8 @@ Xcopy "$(SolutionDir)Libs\glew\bin\Release\$(Platform)\glew32.dll" "$(OutputPath
     </Link>
     <PostBuildEvent>
       <Command>Xcopy "$(SolutionDir)Libs\SDL2-2.0.3\lib\$(Platform)\SDL2.dll" "$(OutputPath)" /y
-Xcopy "$(SolutionDir)Libs\glew\bin\Release\$(Platform)\glew32.dll" "$(OutputPath)" /y</Command>
+Xcopy "$(SolutionDir)Libs\glew\bin\Release\$(Platform)\glew32.dll" "$(OutputPath)" /y
+Xcopy "$(ProjectDir)font.ttf" "$(OutputPath)" /y</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
