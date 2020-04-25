@@ -23,7 +23,7 @@ struct AABB
     };
 
     float Surface() const noexcept;
-    AABB Transform(Vec2 position, Mat2 rotation) const noexcept;
+    AABB Transform(__m128 position, __m128 rotation) const noexcept;
 
     static void DrawWorld(const AABB& A) noexcept;
     static float GetSurface(const std::vector<AABB>& aabbs) noexcept;

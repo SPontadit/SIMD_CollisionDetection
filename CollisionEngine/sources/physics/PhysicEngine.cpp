@@ -100,12 +100,21 @@ void	CPhysicEngine::BuildAABBTree()
 	m_worldAABBs.resize(objectCount);
 	m_xSortedLeaves.resize(objectCount);
 	m_ySortedLeaves.resize(objectCount);
+	
+	CPolygon poly = gVars->pWorld->polygons;
 
 	for (size_t i = 0; i < objectCount; i++)
 	{
-		CPolygonPtr poly = gVars->pWorld->GetPolygon(i);
+		size_t arrayIdx = floor(i / 4);
+		//size_t registerIdx = i % 4;
+		constexpr size_t registerIdx = 0;
 
-		AABB worldAABB = m_localAABBs[i].Transform(poly->position, poly->rotation);
+		// X, X, Y, Y
+		__m128 pos = _mm_shuffle_ps(poly.positionX[arrayIdx], poly.positionY[arrayIdx], _MM_SHUFFLE(registerIdx, registerIdx, registerIdx, registerIdx));
+		// X, Y, X, Y
+		pos = _mm_shuffle_ps(pos, pos, _MM_SHUFFLE(2, 0, 2, 0));
+
+		AABB worldAABB = m_localAABBs[i].Transform(pos, poly.registerRotation[i]);
 
 		m_worldAABBs[i] = worldAABB;
 		m_ySortedLeaves[i] = m_xSortedLeaves[i] = Leaf(worldAABB, i);
@@ -315,190 +324,232 @@ bool CPhysicEngine::SIMD_Shuffle_OBBCollisionTest(__m128 pos, __m128 extent, __m
 	return resMask == 0;
 }
 
-bool CPhysicEngine::SIMD_Set_OBBCollisionTest(CPolygonPtr p1, CPolygonPtr p2) const noexcept
-{
-	__m128 p1x = _mm_set_ps1(p1->position.x);
-	__m128 p1y = _mm_set_ps1(p1->position.y);
+//bool CPhysicEngine::SIMD_Set_OBBCollisionTest(CPolygonPtr p1, CPolygonPtr p2) const noexcept
+//{
+//	__m128 p1x = _mm_set_ps1(p1->position.x);
+//	__m128 p1y = _mm_set_ps1(p1->position.y);
+//
+//	__m128 p2x = _mm_set_ps1(p2->position.x);
+//	__m128 p2y = _mm_set_ps1(p2->position.y);
+//
+//	__m128 dx = _mm_sub_ps(p1x, p2x);
+//	__m128 dy = _mm_sub_ps(p1y, p2y);
+//
+//	__m128 ex = _mm_set_ps(p1->halfExtent.x, p1->halfExtent.x, p2->halfExtent.x, p2->halfExtent.x);
+//	__m128 ey = _mm_set_ps(p1->halfExtent.y, p1->halfExtent.y, p2->halfExtent.y, p2->halfExtent.y);
+//
+//
+//	__m128 rotXx = _mm_set_ps(p1->rotation.X.x, p1->rotation.X.x, p2->rotation.X.x, p2->rotation.X.x);
+//	__m128 rotXy = _mm_set_ps(p1->rotation.X.y, p1->rotation.X.y, p2->rotation.X.y, p2->rotation.X.y);
+//	__m128 rotYx = _mm_set_ps(p1->rotation.Y.x, p1->rotation.Y.x, p2->rotation.Y.x, p2->rotation.Y.x);
+//	__m128 rotYy = _mm_set_ps(p1->rotation.Y.y, p1->rotation.Y.y, p2->rotation.Y.y, p2->rotation.Y.y);
+//
+//	//__m128 rotX = _mm_set_ps(p1->rotation.X.x, p1->rotation.Y.x, p2->rotation.X.x, p2->rotation.Y.x);
+//	//__m128 rotY = _mm_set_ps(p1->rotation.X.y, p1->rotation.Y.y, p2->rotation.X.y, p2->rotation.Y.y);
+//
+//	//__m128 rotXx = _mm_shuffle_ps(rotX, rotX, _MM_SHUFFLE(3, 3, 1, 1));
+//	//__m128 rotXy = _mm_shuffle_ps(rotY, rotY, _MM_SHUFFLE(3, 3, 1, 1));
+//	//__m128 rotYx = _mm_shuffle_ps(rotX, rotX, _MM_SHUFFLE(2, 2, 0, 0));
+//	//__m128 rotYy = _mm_shuffle_ps(rotY, rotY, _MM_SHUFFLE(2, 2, 0, 0));
+//
+//	__m128 rx = _mm_add_ps(_mm_mul_ps(ex, rotXx), _mm_mul_ps(ey, rotYx));
+//	__m128 ry = _mm_add_ps(_mm_mul_ps(ex, rotXy), _mm_mul_ps(ey, rotYy));
+//
+//	ey = _mm_xor_ps(ey, _mm_set_ps1(-0.f));
+//
+//	__m128 rx2 = _mm_add_ps(_mm_mul_ps(ex, rotXx), _mm_mul_ps(ey, rotYx));
+//	__m128 ry2 = _mm_add_ps(_mm_mul_ps(ex, rotXy), _mm_mul_ps(ey, rotYy));
+//
+//	__m128 ax = _mm_set_ps(p2->rotation.X.x, p2->rotation.Y.x, p1->rotation.X.x, p1->rotation.Y.x);
+//	__m128 ay = _mm_set_ps(p2->rotation.X.y, p2->rotation.Y.y, p1->rotation.X.y, p1->rotation.Y.y);
+//	//__m128 ax = _mm_shuffle_ps(rotX, rotX, _MM_SHUFFLE(1, 0, 3, 2));
+//	//__m128 ay = _mm_shuffle_ps(rotY, rotY, _MM_SHUFFLE(1, 0, 3, 2));
+//
+//	__m128 absMask = _mm_castsi128_ps(_mm_set1_epi32(0x7fffffff));
+//	__m128 r = _mm_and_ps(_mm_add_ps(_mm_mul_ps(rx, ax), _mm_mul_ps(ry, ay)), absMask);
+//	__m128 r2 = _mm_and_ps(_mm_add_ps(_mm_mul_ps(rx2, ax), _mm_mul_ps(ry2, ay)), absMask);
+//	__m128 e = _mm_set_ps(p2->halfExtent.x, p2->halfExtent.y, p1->halfExtent.x, p1->halfExtent.y);
+//	__m128 rs = _mm_add_ps(_mm_max_ps(r, r2), e);
+//
+//	__m128 d = _mm_and_ps(_mm_add_ps(_mm_mul_ps(dx, ax), _mm_mul_ps(dy, ay)), absMask);
+//
+//	__m128 res = _mm_cmpgt_ps(d, rs);
+//	int resMask = _mm_movemask_ps(res);
+//
+//	return resMask == 0;
+//}
 
-	__m128 p2x = _mm_set_ps1(p2->position.x);
-	__m128 p2y = _mm_set_ps1(p2->position.y);
+//bool CPhysicEngine::SIMD_Set_Shuffle_OBBCollisionTest(CPolygonPtr p1, CPolygonPtr p2) const noexcept
+//{
+//	__m128 pos = _mm_set_ps(p2->position.y, p2->position.x, p1->position.y, p1->position.x);
+//	__m128 extent = _mm_set_ps(p2->halfExtent.y, p2->halfExtent.x, p1->halfExtent.y, p1->halfExtent.x);
+//	__m128 rotX = _mm_set_ps(p1->rotation.X.x, p1->rotation.Y.x, p2->rotation.X.x, p2->rotation.Y.x);
+//	__m128 rotY = _mm_set_ps(p1->rotation.X.y, p1->rotation.Y.y, p2->rotation.X.y, p2->rotation.Y.y);
+//
+//	__m128 p1x = _mm_shuffle_ps(pos, pos, _MM_SHUFFLE(0, 0, 0, 0));
+//	__m128 p1y = _mm_shuffle_ps(pos, pos, _MM_SHUFFLE(1, 1, 1, 1));
+//	__m128 p2x = _mm_shuffle_ps(pos, pos, _MM_SHUFFLE(2, 2, 2, 2));
+//	__m128 p2y = _mm_shuffle_ps(pos, pos, _MM_SHUFFLE(3, 3, 3, 3));
+//
+//	__m128 dx = _mm_sub_ps(p1x, p2x);
+//	__m128 dy = _mm_sub_ps(p1y, p2y);
+//
+//	__m128 ex = _mm_shuffle_ps(extent, extent, _MM_SHUFFLE(0, 0, 2, 2));
+//	__m128 ey = _mm_shuffle_ps(extent, extent, _MM_SHUFFLE(1, 1, 3, 3));
+//
+//	__m128 tmp_e = _mm_blend_ps(ex, ey, 0b1010);
+//	__m128 e = _mm_shuffle_ps(tmp_e, tmp_e, _MM_SHUFFLE(0, 1, 2, 3));
+//
+//	__m128 rotXx = _mm_shuffle_ps(rotX, rotX, _MM_SHUFFLE(3, 3, 1, 1));
+//	__m128 rotXy = _mm_shuffle_ps(rotY, rotY, _MM_SHUFFLE(3, 3, 1, 1));
+//	__m128 rotYx = _mm_shuffle_ps(rotX, rotX, _MM_SHUFFLE(2, 2, 0, 0));
+//	__m128 rotYy = _mm_shuffle_ps(rotY, rotY, _MM_SHUFFLE(2, 2, 0, 0));
+//
+//	__m128 rx = _mm_add_ps(_mm_mul_ps(ex, rotXx), _mm_mul_ps(ey, rotYx));
+//	__m128 ry = _mm_add_ps(_mm_mul_ps(ex, rotXy), _mm_mul_ps(ey, rotYy));
+//
+//	ey = _mm_xor_ps(ey, _mm_set_ps1(-0.f));
+//
+//	__m128 rx2 = _mm_add_ps(_mm_mul_ps(ex, rotXx), _mm_mul_ps(ey, rotYx));
+//	__m128 ry2 = _mm_add_ps(_mm_mul_ps(ex, rotXy), _mm_mul_ps(ey, rotYy));
+//
+//	__m128 ax = _mm_shuffle_ps(rotX, rotX, _MM_SHUFFLE(1, 0, 3, 2));
+//	__m128 ay = _mm_shuffle_ps(rotY, rotY, _MM_SHUFFLE(1, 0, 3, 2));
+//
+//	__m128 absMask = _mm_castsi128_ps(_mm_set1_epi32(0x7fffffff));
+//	__m128 r = _mm_and_ps(_mm_add_ps(_mm_mul_ps(rx, ax), _mm_mul_ps(ry, ay)), absMask);
+//	__m128 r2 = _mm_and_ps(_mm_add_ps(_mm_mul_ps(rx2, ax), _mm_mul_ps(ry2, ay)), absMask);
+//
+//	__m128 rs = _mm_add_ps(_mm_max_ps(r, r2), e);
+//
+//	__m128 d = _mm_and_ps(_mm_add_ps(_mm_mul_ps(dx, ax), _mm_mul_ps(dy, ay)), absMask);
+//
+//	__m128 res = _mm_cmpgt_ps(d, rs);
+//	int resMask = _mm_movemask_ps(res);
+//
+//	return resMask == 0;
+//}
 
-	__m128 dx = _mm_sub_ps(p1x, p2x);
-	__m128 dy = _mm_sub_ps(p1y, p2y);
-
-	__m128 ex = _mm_set_ps(p1->halfExtent.x, p1->halfExtent.x, p2->halfExtent.x, p2->halfExtent.x);
-	__m128 ey = _mm_set_ps(p1->halfExtent.y, p1->halfExtent.y, p2->halfExtent.y, p2->halfExtent.y);
-
-
-	__m128 rotXx = _mm_set_ps(p1->rotation.X.x, p1->rotation.X.x, p2->rotation.X.x, p2->rotation.X.x);
-	__m128 rotXy = _mm_set_ps(p1->rotation.X.y, p1->rotation.X.y, p2->rotation.X.y, p2->rotation.X.y);
-	__m128 rotYx = _mm_set_ps(p1->rotation.Y.x, p1->rotation.Y.x, p2->rotation.Y.x, p2->rotation.Y.x);
-	__m128 rotYy = _mm_set_ps(p1->rotation.Y.y, p1->rotation.Y.y, p2->rotation.Y.y, p2->rotation.Y.y);
-
-	//__m128 rotX = _mm_set_ps(p1->rotation.X.x, p1->rotation.Y.x, p2->rotation.X.x, p2->rotation.Y.x);
-	//__m128 rotY = _mm_set_ps(p1->rotation.X.y, p1->rotation.Y.y, p2->rotation.X.y, p2->rotation.Y.y);
-
-	//__m128 rotXx = _mm_shuffle_ps(rotX, rotX, _MM_SHUFFLE(3, 3, 1, 1));
-	//__m128 rotXy = _mm_shuffle_ps(rotY, rotY, _MM_SHUFFLE(3, 3, 1, 1));
-	//__m128 rotYx = _mm_shuffle_ps(rotX, rotX, _MM_SHUFFLE(2, 2, 0, 0));
-	//__m128 rotYy = _mm_shuffle_ps(rotY, rotY, _MM_SHUFFLE(2, 2, 0, 0));
-
-	__m128 rx = _mm_add_ps(_mm_mul_ps(ex, rotXx), _mm_mul_ps(ey, rotYx));
-	__m128 ry = _mm_add_ps(_mm_mul_ps(ex, rotXy), _mm_mul_ps(ey, rotYy));
-
-	ey = _mm_xor_ps(ey, _mm_set_ps1(-0.f));
-
-	__m128 rx2 = _mm_add_ps(_mm_mul_ps(ex, rotXx), _mm_mul_ps(ey, rotYx));
-	__m128 ry2 = _mm_add_ps(_mm_mul_ps(ex, rotXy), _mm_mul_ps(ey, rotYy));
-
-	__m128 ax = _mm_set_ps(p2->rotation.X.x, p2->rotation.Y.x, p1->rotation.X.x, p1->rotation.Y.x);
-	__m128 ay = _mm_set_ps(p2->rotation.X.y, p2->rotation.Y.y, p1->rotation.X.y, p1->rotation.Y.y);
-	//__m128 ax = _mm_shuffle_ps(rotX, rotX, _MM_SHUFFLE(1, 0, 3, 2));
-	//__m128 ay = _mm_shuffle_ps(rotY, rotY, _MM_SHUFFLE(1, 0, 3, 2));
-
-	__m128 absMask = _mm_castsi128_ps(_mm_set1_epi32(0x7fffffff));
-	__m128 r = _mm_and_ps(_mm_add_ps(_mm_mul_ps(rx, ax), _mm_mul_ps(ry, ay)), absMask);
-	__m128 r2 = _mm_and_ps(_mm_add_ps(_mm_mul_ps(rx2, ax), _mm_mul_ps(ry2, ay)), absMask);
-	__m128 e = _mm_set_ps(p2->halfExtent.x, p2->halfExtent.y, p1->halfExtent.x, p1->halfExtent.y);
-	__m128 rs = _mm_add_ps(_mm_max_ps(r, r2), e);
-
-	__m128 d = _mm_and_ps(_mm_add_ps(_mm_mul_ps(dx, ax), _mm_mul_ps(dy, ay)), absMask);
-
-	__m128 res = _mm_cmpgt_ps(d, rs);
-	int resMask = _mm_movemask_ps(res);
-
-	return resMask == 0;
-}
-
-bool CPhysicEngine::SIMD_Set_Shuffle_OBBCollisionTest(CPolygonPtr p1, CPolygonPtr p2) const noexcept
-{
-	__m128 pos = _mm_set_ps(p2->position.y, p2->position.x, p1->position.y, p1->position.x);
-	__m128 extent = _mm_set_ps(p2->halfExtent.y, p2->halfExtent.x, p1->halfExtent.y, p1->halfExtent.x);
-	__m128 rotX = _mm_set_ps(p1->rotation.X.x, p1->rotation.Y.x, p2->rotation.X.x, p2->rotation.Y.x);
-	__m128 rotY = _mm_set_ps(p1->rotation.X.y, p1->rotation.Y.y, p2->rotation.X.y, p2->rotation.Y.y);
-
-	__m128 p1x = _mm_shuffle_ps(pos, pos, _MM_SHUFFLE(0, 0, 0, 0));
-	__m128 p1y = _mm_shuffle_ps(pos, pos, _MM_SHUFFLE(1, 1, 1, 1));
-	__m128 p2x = _mm_shuffle_ps(pos, pos, _MM_SHUFFLE(2, 2, 2, 2));
-	__m128 p2y = _mm_shuffle_ps(pos, pos, _MM_SHUFFLE(3, 3, 3, 3));
-
-	__m128 dx = _mm_sub_ps(p1x, p2x);
-	__m128 dy = _mm_sub_ps(p1y, p2y);
-
-	__m128 ex = _mm_shuffle_ps(extent, extent, _MM_SHUFFLE(0, 0, 2, 2));
-	__m128 ey = _mm_shuffle_ps(extent, extent, _MM_SHUFFLE(1, 1, 3, 3));
-
-	__m128 tmp_e = _mm_blend_ps(ex, ey, 0b1010);
-	__m128 e = _mm_shuffle_ps(tmp_e, tmp_e, _MM_SHUFFLE(0, 1, 2, 3));
-
-	__m128 rotXx = _mm_shuffle_ps(rotX, rotX, _MM_SHUFFLE(3, 3, 1, 1));
-	__m128 rotXy = _mm_shuffle_ps(rotY, rotY, _MM_SHUFFLE(3, 3, 1, 1));
-	__m128 rotYx = _mm_shuffle_ps(rotX, rotX, _MM_SHUFFLE(2, 2, 0, 0));
-	__m128 rotYy = _mm_shuffle_ps(rotY, rotY, _MM_SHUFFLE(2, 2, 0, 0));
-
-	__m128 rx = _mm_add_ps(_mm_mul_ps(ex, rotXx), _mm_mul_ps(ey, rotYx));
-	__m128 ry = _mm_add_ps(_mm_mul_ps(ex, rotXy), _mm_mul_ps(ey, rotYy));
-
-	ey = _mm_xor_ps(ey, _mm_set_ps1(-0.f));
-
-	__m128 rx2 = _mm_add_ps(_mm_mul_ps(ex, rotXx), _mm_mul_ps(ey, rotYx));
-	__m128 ry2 = _mm_add_ps(_mm_mul_ps(ex, rotXy), _mm_mul_ps(ey, rotYy));
-
-	__m128 ax = _mm_shuffle_ps(rotX, rotX, _MM_SHUFFLE(1, 0, 3, 2));
-	__m128 ay = _mm_shuffle_ps(rotY, rotY, _MM_SHUFFLE(1, 0, 3, 2));
-
-	__m128 absMask = _mm_castsi128_ps(_mm_set1_epi32(0x7fffffff));
-	__m128 r = _mm_and_ps(_mm_add_ps(_mm_mul_ps(rx, ax), _mm_mul_ps(ry, ay)), absMask);
-	__m128 r2 = _mm_and_ps(_mm_add_ps(_mm_mul_ps(rx2, ax), _mm_mul_ps(ry2, ay)), absMask);
-
-	__m128 rs = _mm_add_ps(_mm_max_ps(r, r2), e);
-
-	__m128 d = _mm_and_ps(_mm_add_ps(_mm_mul_ps(dx, ax), _mm_mul_ps(dy, ay)), absMask);
-
-	__m128 res = _mm_cmpgt_ps(d, rs);
-	int resMask = _mm_movemask_ps(res);
-
-	return resMask == 0;
-}
-
-bool CPhysicEngine::SISD_OBBCollisionTest(CPolygonPtr p1, CPolygonPtr p2) const noexcept
-{
-	float ra, rb;
-
-	float aE[2] = { p1->halfExtent.x, p1->halfExtent.y };
-	float bE[2] = { p2->halfExtent.x, p2->halfExtent.y };
-
-	float R[2][2];
-	float absR[2][2];
-
-	R[0][0] = p1->rotation.X | p2->rotation.X;
-	R[0][1] = p1->rotation.X | p2->rotation.Y;
-	R[1][0] = p1->rotation.Y | p2->rotation.X;
-	R[1][1] = p1->rotation.Y | p2->rotation.Y;
-
-	for (size_t i = 0; i < 2; i++)
-		for (size_t j = 0; j < 2; j++)
-			absR[i][j] = abs(R[i][j]) + FLT_EPSILON;
-
-	Vec2 tmp = p2->position - p1->position;
-	tmp = Vec2(tmp | p1->rotation.X, tmp | p1->rotation.Y);
-
-	float t[2] = { tmp.x, tmp.y };
-
-
-	//// Test axes L = A0, L = A1
-	for (size_t i = 0; i < 2; i++)
-	{
-		ra = aE[i];
-		rb = bE[0] * absR[i][0] + bE[1] * absR[i][1];
-
-		if (abs(t[i]) > ra + rb)
-			return 0;
-	}
-
-	// Test axes L = B0, L = B1
-	for (size_t i = 0; i < 2; i++)
-	{
-		ra = aE[0] * absR[0][i] + aE[1] * absR[1][i];
-		rb = bE[i];
-
-		if (abs(t[0] * R[0][i] + t[1] * R[1][i]) > ra + rb)
-			return 0;
-	}
-
-	return 1;
-}
+//bool CPhysicEngine::SISD_OBBCollisionTest(CPolygonPtr p1, CPolygonPtr p2) const noexcept
+//{
+//	float ra, rb;
+//
+//	float aE[2] = { p1->halfExtent.x, p1->halfExtent.y };
+//	float bE[2] = { p2->halfExtent.x, p2->halfExtent.y };
+//
+//	float R[2][2];
+//	float absR[2][2];
+//
+//	R[0][0] = p1->rotation.X | p2->rotation.X;
+//	R[0][1] = p1->rotation.X | p2->rotation.Y;
+//	R[1][0] = p1->rotation.Y | p2->rotation.X;
+//	R[1][1] = p1->rotation.Y | p2->rotation.Y;
+//
+//	for (size_t i = 0; i < 2; i++)
+//		for (size_t j = 0; j < 2; j++)
+//			absR[i][j] = abs(R[i][j]) + FLT_EPSILON;
+//
+//	Vec2 tmp = p2->position - p1->position;
+//	tmp = Vec2(tmp | p1->rotation.X, tmp | p1->rotation.Y);
+//
+//	float t[2] = { tmp.x, tmp.y };
+//
+//
+//	//// Test axes L = A0, L = A1
+//	for (size_t i = 0; i < 2; i++)
+//	{
+//		ra = aE[i];
+//		rb = bE[0] * absR[i][0] + bE[1] * absR[i][1];
+//
+//		if (abs(t[i]) > ra + rb)
+//			return 0;
+//	}
+//
+//	// Test axes L = B0, L = B1
+//	for (size_t i = 0; i < 2; i++)
+//	{
+//		ra = aE[0] * absR[0][i] + aE[1] * absR[1][i];
+//		rb = bE[i];
+//
+//		if (abs(t[0] * R[0][i] + t[1] * R[1][i]) > ra + rb)
+//			return 0;
+//	}
+//
+//	return 1;
+//}
 
 void	CPhysicEngine::CollisionNarrowPhase()
 {
 	m_collidingPairs.clear();
+	CPolygon poly = gVars->pWorld->polygons;
+
 	for (const SPolygonPair& pair : m_pairsToCheck)
 	{
 		SCollision collision;
-		collision.polyA = pair.polyA;
-		collision.polyB = pair.polyB;
+		size_t idx1 = pair.polyA;
+		size_t idx2 = pair.polyB;
 		//if (pair.polyA->CheckCollision(*(pair.polyB), collision.point, collision.normal, collision.distance)) 
 
-		__m128 pos = _mm_set_ps(pair.polyB->position.y, pair.polyB->position.x, pair.polyA->position.y, pair.polyA->position.x);
-		__m128 extent = _mm_set_ps(pair.polyB->halfExtent.y, pair.polyB->halfExtent.x, pair.polyA->halfExtent.y, pair.polyA->halfExtent.x);
-		__m128 rotX = _mm_set_ps(pair.polyA->rotation.X.x, pair.polyA->rotation.Y.x, pair.polyB->rotation.X.x, pair.polyB->rotation.Y.x);
-		__m128 rotY = _mm_set_ps(pair.polyA->rotation.X.y, pair.polyA->rotation.Y.y, pair.polyB->rotation.X.y, pair.polyB->rotation.Y.y);
+
+		// Function
+		size_t arrayIdx1 = floor(idx1 / 4);
+		//size_t registerIdx1 = idx1 % 4;
+		size_t arrayIdx2 = floor(idx2 / 4);
+		//size_t registerIdx2 = idx2 % 4;
+		
+		constexpr size_t registerIdx1 = 0;
+		constexpr size_t registerIdx2 = 0;
+
+
+		// x1, x1, y1, y1
+		__m128 pos1 = _mm_shuffle_ps(poly.positionX[arrayIdx1], poly.positionY[arrayIdx1], _MM_SHUFFLE(registerIdx1, registerIdx1, registerIdx1, registerIdx1));
+		// x2, x2, y2, y2
+		__m128 pos2 = _mm_shuffle_ps(poly.positionX[arrayIdx2], poly.positionY[arrayIdx2], _MM_SHUFFLE(registerIdx2, registerIdx2, registerIdx2, registerIdx2));
+		//x1, y1, x2, y2
+		__m128 pos = _mm_shuffle_ps(pos1, pos2, _MM_SHUFFLE(2, 0, 2, 0));
+
+		// x1, x1, y1, y1
+		__m128 extent1 = _mm_shuffle_ps(poly.halfExtentX[arrayIdx1], poly.halfExtentY[arrayIdx1], _MM_SHUFFLE(registerIdx1, registerIdx1, registerIdx1, registerIdx1));
+		// x2, x2, y2, y2
+		__m128 extent2 = _mm_shuffle_ps(poly.halfExtentX[arrayIdx2], poly.halfExtentY[arrayIdx2], _MM_SHUFFLE(registerIdx2, registerIdx2, registerIdx2, registerIdx2));
+		//x1, y1, x2, y2
+		__m128 extent = _mm_shuffle_ps(extent1, extent2, _MM_SHUFFLE(2, 0, 2, 0));
+
+
+		// x1, y1, x2, y2
+		//__m128 pos = _mm_set_ps(pair.polyB->position.y, pair.polyB->position.x, pair.polyA->position.y, pair.polyA->position.x);
+		// Comme position
+		//__m128 extent = _mm_set_ps(pair.polyB->halfExtent.y, pair.polyB->halfExtent.x, pair.polyA->halfExtent.y, pair.polyA->halfExtent.x);
+
+		// AXx, AXy, AYx, AYy         // BXx, BXy, BYx, BYy
+		// AXx, AYx, AXy, AYy
+		// sys.rotation[idx1]        // sys.rotation[idx2]
+
+
+		__m128 rotX = _mm_shuffle_ps(poly.registerRotation[idx2], poly.registerRotation[idx1], _MM_SHUFFLE(0, 2, 0, 2));
+		__m128 rotY = _mm_shuffle_ps(poly.registerRotation[idx2], poly.registerRotation[idx1], _MM_SHUFFLE(1, 3, 1, 3));
+
+
+		//__m128 pos = _mm_set_ps(pair.polyB->position.y, pair.polyB->position.x, pair.polyA->position.y, pair.polyA->position.x);
+		//__m128 extent = _mm_set_ps(pair.polyB->halfExtent.y, pair.polyB->halfExtent.x, pair.polyA->halfExtent.y, pair.polyA->halfExtent.x);
+		//__m128 rotX = _mm_set_ps(pair.polyA->rotation.X.x, pair.polyA->rotation.Y.x, pair.polyB->rotation.X.x, pair.polyB->rotation.Y.x);
+		//__m128 rotY = _mm_set_ps(pair.polyA->rotation.X.y, pair.polyA->rotation.Y.y, pair.polyB->rotation.X.y, pair.polyB->rotation.Y.y);
 		
 		if (SIMD_Shuffle_OBBCollisionTest(pos, extent, rotX, rotY))
 		{
 			m_collidingPairs.push_back(collision);
 		}
-		if (SIMD_Set_OBBCollisionTest(pair.polyA, pair.polyB))
-		{
-			m_collidingPairs.push_back(collision);
-		}
-		if (SIMD_Set_Shuffle_OBBCollisionTest(pair.polyA, pair.polyB))
-		{
-			m_collidingPairs.push_back(collision);
-		}
-		if (SISD_OBBCollisionTest(pair.polyA, pair.polyB))
-		{
-			m_collidingPairs.push_back(collision);
-		}
+		//if (SIMD_Set_OBBCollisionTest(pair.polyA, pair.polyB))
+		//{
+		//	m_collidingPairs.push_back(collision);
+		//}
+		//if (SIMD_Set_Shuffle_OBBCollisionTest(pair.polyA, pair.polyB))
+		//{
+		//	m_collidingPairs.push_back(collision);
+		//}
+		//if (SISD_OBBCollisionTest(pair.polyA, pair.polyB))
+		//{
+		//	m_collidingPairs.push_back(collision);
+		//}
 	}
 }

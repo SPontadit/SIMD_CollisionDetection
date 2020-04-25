@@ -11,10 +11,10 @@ class IBroadPhase;
 
 struct SPolygonPair
 {
-	SPolygonPair(CPolygonPtr _polyA, CPolygonPtr _polyB) : polyA(_polyA), polyB(_polyB){}
+	SPolygonPair(size_t _polyA, size_t _polyB) : polyA(_polyA), polyB(_polyB){}
 
-	CPolygonPtr	polyA;
-	CPolygonPtr	polyB;
+	size_t	polyA;
+	size_t	polyB;
 };
 
 struct SCollision

@@ -80,12 +80,14 @@ float AABB::Surface() const noexcept
     return (-maximum.x - minimum.x) * (-maximum.y - minimum.y);
 }
 
-AABB AABB::Transform(Vec2 position, Mat2 rotation) const noexcept
+AABB AABB::Transform(__m128 position, __m128 rotation) const noexcept
 {
+    // Shuffle
     __m128 min = _mm_set_ps(minimum.y, minimum.x, minimum.y, minimum.x);
     __m128 max = _mm_set_ps(maximum.y, maximum.x, maximum.y, maximum.x);
 
-    __m128 rot = _mm_set_ps(rotation.Y.y, rotation.X.y, rotation.Y.x, rotation.X.x);
+    __m128 rot = _mm_shuffle_ps(rotation, rotation, _MM_SHUFFLE(3, 1, 2, 0));
+    //__m128 rot = _mm_set_ps(rotation.Y.y, rotation.X.y, rotation.Y.x, rotation.X.x);
 
     __m128 e = _mm_mul_ps(min, rot);
     __m128 f = _mm_mul_ps(max, rot);
@@ -99,9 +101,7 @@ AABB AABB::Transform(Vec2 position, Mat2 rotation) const noexcept
 
     __m128 aabb = _mm_shuffle_ps(min, max, _MM_SHUFFLE(1, 0, 1, 0));
 
-    __m128 pos = _mm_set_ps(position.y, position.x, position.y, position.x);
-
-    AABB res = AABB(_mm_add_ps(aabb, pos));
+    AABB res = AABB(_mm_add_ps(aabb, position));
     res.maximum *= -1.0f;
 
     return res;

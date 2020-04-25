@@ -70,9 +70,6 @@
     <ClInclude Include="headers\scenes\SceneManager.h">
       <Filter>Headers\Scenes</Filter>
     </ClInclude>
-    <ClInclude Include="headers\scenes\SceneSpheres.h">
-      <Filter>Headers\Scenes</Filter>
-    </ClInclude>
     <ClInclude Include="headers\render\RenderWindow.h">
       <Filter>Headers\Render</Filter>
     </ClInclude>
@@ -101,9 +98,6 @@
       <Filter>Headers\Behaviors</Filter>
     </ClInclude>
     <ClInclude Include="headers\behaviors\SimplePolygonBounce.h">
-      <Filter>Headers\Behaviors</Filter>
-    </ClInclude>
-    <ClInclude Include="headers\behaviors\SphereSimulation.h">
       <Filter>Headers\Behaviors</Filter>
     </ClInclude>
     <ClInclude Include="stdafx.h">

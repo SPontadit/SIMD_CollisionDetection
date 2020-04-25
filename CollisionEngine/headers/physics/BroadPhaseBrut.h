@@ -16,7 +16,7 @@ public:
 		{
 			for (size_t j = i + 1; j < gVars->pWorld->GetPolygonCount(); ++j)
 			{
-				pairsToCheck.push_back(SPolygonPair(gVars->pWorld->GetPolygon(i), gVars->pWorld->GetPolygon(j)));
+				pairsToCheck.push_back(SPolygonPair(i, j));
 			}
 		}
 	}

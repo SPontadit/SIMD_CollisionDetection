@@ -13,7 +13,8 @@ protected:
 public:
 	virtual ~CBehavior() = default;
 
-	CPolygonPtr poly;
+	//CPolygonPtr poly;
+	size_t polyIdx;
 
 	virtual void Start(){}
 	virtual void Update(float frameTime){}

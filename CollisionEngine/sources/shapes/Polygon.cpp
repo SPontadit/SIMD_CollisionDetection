@@ -5,64 +5,111 @@
 #include "physics/PhysicEngine.h"
 #include "shapes/AABB.h"
 
-CPolygon::CPolygon(size_t index)
-	: m_vertexBufferId(0), m_index(index), density(0.1f)
+CPolygon::CPolygon()
 {
+	__m128 zero = _mm_set_ps1(0.0f);
+	for (size_t i = 0; i < polyCount; i++)
+	{
+		registerRotation[i] = zero;
+		positionX[i] = zero;
+		positionY[i] = zero;
+		halfExtentX[i] = zero;
+		halfExtentY[i] = zero;
+		speed[i] = Vec2();
+		m_vertexBufferId[i] = 0;
+	}
 }
 
 CPolygon::~CPolygon()
 {
-	DestroyBuffers();
+	for (size_t i = 0; i < polyCount; i++)
+		DestroyBuffers(i);
 }
 
-void CPolygon::Build()
+void CPolygon::Build(const size_t polyIdx, const float pointsX[4], const float pointsY[4])
 {
-	m_lines.clear();
+	m_lines[polyIdx].clear();
 
-	CreateBuffers();
-	BuildLines();
+	CreateBuffers(polyIdx, pointsX, pointsY);
+	BuildLines(polyIdx, pointsX, pointsY);
 }
 
-void CPolygon::Draw()
+void CPolygon::Draw(const size_t index)
 {
+	Vec2 position = GetPosition(index);
+
 	// Set transforms (qssuming model view mode is set)
-	float transfMat[16] = {	rotation.X.x, rotation.X.y, 0.0f, 0.0f,
-							rotation.Y.x, rotation.Y.y, 0.0f, 0.0f,
+	float transfMat[16] = {	rotation[index].X.x, rotation[index].X.y, 0.0f, 0.0f,
+							rotation[index].Y.x, rotation[index].Y.y, 0.0f, 0.0f,
 							0.0f, 0.0f, 0.0f, 1.0f,
 							position.x, position.y, -1.0f, 1.0f };
 	glPushMatrix();
 	glMultMatrixf(transfMat);
 
 	// Draw vertices
-	BindBuffers();
-	glDrawArrays(GL_LINE_LOOP, 0, pointCount);
+	BindBuffers(index);
+	auto err = glGetError();
+
+	glDrawArrays(GL_LINE_LOOP, 0, 8);
+	err = glGetError();
+
+	
 	glDisableClientState(GL_VERTEX_ARRAY);
+	err = glGetError();
 
 	glPopMatrix();
 }
 
-size_t	CPolygon::GetIndex() const
+//size_t	CPolygon::GetIndex() const
+//{
+//	return m_index;
+//}
+
+Vec2 CPolygon::GetPosition(const size_t index) const
 {
-	return m_index;
+	size_t arrayIdx = floor(index / 4);
+	size_t registerIdx = index % 4;
+
+	return { positionX[arrayIdx].m128_f32[registerIdx], 
+		positionY[arrayIdx].m128_f32[registerIdx] };
 }
 
-Vec2	CPolygon::TransformPoint(const Vec2& point) const
+void CPolygon::SetPosition(const size_t index, const Vec2& position)
 {
-	return position + rotation * point;
+	size_t arrayIdx = floor(index / 4);
+	size_t registerIdx = index % 4;
+
+	positionX[arrayIdx].m128_f32[registerIdx] = position.x;
+	positionY[arrayIdx].m128_f32[registerIdx] = position.y;
 }
 
-Vec2	CPolygon::InverseTransformPoint(const Vec2& point) const
+void CPolygon::SetExtent(const size_t index, const Vec2& halfExtent)
 {
-	return rotation.GetInverse() * (point - position);
+	size_t arrayIdx = floor(index / 4);
+	size_t registerIdx = index % 4;
+
+	halfExtentX[arrayIdx].m128_f32[registerIdx] = halfExtent.x;
+	halfExtentY[arrayIdx].m128_f32[registerIdx] = halfExtent.y;
 }
 
-bool	CPolygon::IsPointInside(const Vec2& point) const
+Vec2	CPolygon::TransformPoint(const size_t index, const Vec2& point) const
+{
+	return GetPosition(index) + rotation[index] * point;
+}
+
+Vec2	CPolygon::InverseTransformPoint(const size_t index, const Vec2& point) const
+{
+	return rotation[index].GetInverse() * (point - GetPosition(index));
+}
+
+bool	CPolygon::IsPointInside(const size_t index, const Vec2& point) const
 {
 	float maxDist = -FLT_MAX;
 
-	for (const Line& line : m_lines)
+	for (const Line& line : m_lines[index])
 	{
-		Line globalLine = line.Transform(rotation, position);
+		Vec2 pos = GetPosition(index);
+		Line globalLine = line.Transform(rotation[index], pos);
 		float pointDist = globalLine.GetPointDist(point);
 		maxDist = Max(maxDist, pointDist);
 	}
@@ -75,9 +122,11 @@ bool	CPolygon::CheckCollision(const CPolygon& poly, Vec2& colPoint, Vec2& colNor
 	return false;
 }
 
-void CPolygon::CreateBuffers()
+void CPolygon::CreateBuffers(const size_t polyIdx, const float pointsX[4], const float pointsY[4])
 {
-	DestroyBuffers();
+	DestroyBuffers(polyIdx);
+
+	constexpr size_t pointCount = 4;
 
 	float* vertices = new float[3 * pointCount];
 	for (size_t i = 0; i < pointCount; ++i)
@@ -87,39 +136,50 @@ void CPolygon::CreateBuffers()
 		vertices[3 * i + 2] = 0.0f;
 	}
 
-	glGenBuffers(1, &m_vertexBufferId);
+	GLuint id;
+	glGenBuffers(1, &id);
+	auto err = glGetError();
 
-	glBindBuffer(GL_ARRAY_BUFFER, m_vertexBufferId);
+	glBindBuffer(GL_ARRAY_BUFFER, id);
+	err = glGetError();
+
 	glBufferData(GL_ARRAY_BUFFER, sizeof(float) * 3 * pointCount, vertices, GL_STATIC_DRAW);
+	err = glGetError();
 
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	err = glGetError();
+
+	m_vertexBufferId[polyIdx] = id;
 
 	delete[] vertices;
 }
 
-void CPolygon::BindBuffers()
+void CPolygon::BindBuffers(const size_t polyIdx)
 {
-	if (m_vertexBufferId != 0)
+	if (m_vertexBufferId[polyIdx] != 0)
 	{
-		glBindBuffer(GL_ARRAY_BUFFER, m_vertexBufferId);
+		glBindBuffer(GL_ARRAY_BUFFER, m_vertexBufferId[polyIdx]);
+
+		auto err = glGetError();
 
 		glEnableClientState(GL_VERTEX_ARRAY);
 		glVertexPointer(3, GL_FLOAT, 0, (void*)0);
 	}
 }
 
-
-void CPolygon::DestroyBuffers()
+void CPolygon::DestroyBuffers(const size_t polyIdx)
 {
-	if (m_vertexBufferId != 0)
+	if (m_vertexBufferId[polyIdx] != 0)
 	{
-		glDeleteBuffers(1, &m_vertexBufferId);
-		m_vertexBufferId = 0;
+		glDeleteBuffers(1, &m_vertexBufferId[polyIdx]);
+		m_vertexBufferId[polyIdx] = 0;
 	}
 }
 
-void CPolygon::BuildLines()
+void CPolygon::BuildLines(const size_t polyIdx, const float pointsX[4], const float pointsY[4])
 {
+	constexpr size_t pointCount = 4;
+
 	for (size_t index = 0; index < pointCount; ++index)
 	{
 		int next = (index + 1) % pointCount;
@@ -129,6 +189,6 @@ void CPolygon::BuildLines()
 
 		Vec2 lineDir = (pointA - pointB).Normalized();
 
-		m_lines.push_back(Line(pointB, lineDir));
+		m_lines[polyIdx].push_back(Line(pointB, lineDir));
 	}
 }

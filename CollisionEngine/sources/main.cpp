@@ -10,7 +10,6 @@
 #include "scenes/SceneManager.h"
 #include "scenes/SceneDebugCollisions.h"
 #include "scenes/SceneBouncingPolys.h"
-#include "scenes/SceneSpheres.h"
 
 
 /*
@@ -22,7 +21,6 @@ int _tmain(int argc, char** argv)
 
 	gVars->pSceneManager->AddScene(new CSceneDebugCollisions());
 	gVars->pSceneManager->AddScene(new CSceneBouncingPolys(200));
-	gVars->pSceneManager->AddScene(new CSceneSpheres());
 
 
 	RunApplication();

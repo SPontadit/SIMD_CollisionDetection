@@ -10,17 +10,18 @@
 
 class CPolygonMoverTool : public CBehavior
 {
-	CPolygonPtr	GetClickedPolygon()
+	size_t	GetClickedPolygon()
 	{
 		Vec2 pt, n;
 		Vec2 mousePoint = gVars->pRenderer->ScreenToWorldPos(gVars->pRenderWindow->GetMousePos());
-		CPolygonPtr clickedPoly;
+		size_t clickedPoly = -1;
+		CPolygon poly = gVars->pWorld->polygons;
 
-		gVars->pWorld->ForEachPolygon([&](CPolygonPtr poly)
+		gVars->pWorld->ForEachPolygon([&](size_t idx)
 		{
-			if (poly->IsPointInside(mousePoint))
+			if (poly.IsPointInside(idx, mousePoint))
 			{
-				clickedPoly = poly;
+				clickedPoly = idx;
 			}
 		});
 
@@ -29,34 +30,41 @@ class CPolygonMoverTool : public CBehavior
 
 	virtual void Update(float frameTime) override
 	{
+		CPolygon poly = gVars->pWorld->polygons;
 		if (gVars->pRenderWindow->GetMouseButton(0) || gVars->pRenderWindow->GetMouseButton(2))
 		{
-			if (!m_selectedPoly)
+			if (m_selectedPolyIdx == -1)
 			{
-				m_selectedPoly = GetClickedPolygon();
+				m_selectedPolyIdx = GetClickedPolygon();
 				m_prevMousePos = gVars->pRenderer->ScreenToWorldPos(gVars->pRenderWindow->GetMousePos());
 				m_translate = gVars->pRenderWindow->GetMouseButton(0);
 				m_clickMousePos = m_prevMousePos;
 
-				if (m_selectedPoly)
-					m_clickAngle = m_selectedPoly->rotation.GetAngle();
+				if (m_selectedPolyIdx != -1)
+					m_clickAngle = poly.rotation[m_selectedPolyIdx].GetAngle();
 			}
 			else
 			{
 				Vec2 mousePoint = gVars->pRenderer->ScreenToWorldPos(gVars->pRenderWindow->GetMousePos());
 
+				size_t arrayIdx1 = floor(m_selectedPolyIdx / 4);
+				size_t registerIdx1 = m_selectedPolyIdx % 4;
+
+				Vec2 pos = poly.GetPosition(m_selectedPolyIdx);
+
 				if (m_translate)
 				{
-					m_selectedPoly->position += mousePoint - m_prevMousePos;
-					m_selectedPoly->speed = Vec2();
+					Vec2 result = pos + mousePoint - m_prevMousePos;
+					poly.SetPosition(m_selectedPolyIdx, result);
+					//m_selectedPoly->speed = Vec2();
 				}
 				else
 				{
-					Vec2 from = m_clickMousePos - m_selectedPoly->position;
-					Vec2 to = mousePoint - m_selectedPoly->position;
+					Vec2 from = m_clickMousePos - pos;
+					Vec2 to = mousePoint - pos;
 
-					m_selectedPoly->rotation.SetAngle(m_clickAngle + from.Angle(to)); 
-					m_selectedPoly->speed = Vec2();
+					poly.rotation[m_selectedPolyIdx].SetAngle(m_clickAngle + from.Angle(to));
+					//m_selectedPoly->speed = Vec2();
 				}
 
 				m_prevMousePos = mousePoint;
@@ -64,12 +72,12 @@ class CPolygonMoverTool : public CBehavior
 		}
 		else
 		{
-			m_selectedPoly.reset();
+			//m_selectedPolyIdx.reset();
 		}
 	}
 
 private:
-	CPolygonPtr	m_selectedPoly;
+	size_t		m_selectedPolyIdx;
 	bool		m_translate;
 	Vec2		m_prevMousePos;
 	Vec2		m_clickMousePos;

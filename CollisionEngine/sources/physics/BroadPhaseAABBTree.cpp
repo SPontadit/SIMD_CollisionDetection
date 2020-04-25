@@ -28,7 +28,7 @@ void CBroadPhaseAABBTree::BVH4TraversalRecurse(size_t polyIndex, const PackedAAB
         if (child.isLeaf)
         {
             if (child.index > polyIndex)
-                pairsToCheck.push_back(SPolygonPair(gVars->pWorld->GetPolygon(polyIndex), gVars->pWorld->GetPolygon(child.index)));
+                pairsToCheck.push_back(SPolygonPair(polyIndex, child.index));
         }
         else
             BVH4TraversalRecurse(polyIndex, polyAABBPacked, bvh4Nodes, child.index, pairsToCheck);
@@ -41,7 +41,7 @@ void CBroadPhaseAABBTree::BVH4TraversalRecurse(size_t polyIndex, const PackedAAB
         if (child.isLeaf)
         {
             if (child.index > polyIndex)
-                pairsToCheck.push_back(SPolygonPair(gVars->pWorld->GetPolygon(polyIndex), gVars->pWorld->GetPolygon(child.index)));
+                pairsToCheck.push_back(SPolygonPair(polyIndex, child.index));
         }
         else
             BVH4TraversalRecurse(polyIndex, polyAABBPacked, bvh4Nodes, child.index, pairsToCheck);
@@ -54,7 +54,7 @@ void CBroadPhaseAABBTree::BVH4TraversalRecurse(size_t polyIndex, const PackedAAB
         if (child.isLeaf)
         {
             if (child.index > polyIndex)
-                pairsToCheck.push_back(SPolygonPair(gVars->pWorld->GetPolygon(polyIndex), gVars->pWorld->GetPolygon(child.index)));
+                pairsToCheck.push_back(SPolygonPair(polyIndex, child.index));
         }
         else
             BVH4TraversalRecurse(polyIndex, polyAABBPacked, bvh4Nodes, child.index, pairsToCheck);
@@ -67,7 +67,7 @@ void CBroadPhaseAABBTree::BVH4TraversalRecurse(size_t polyIndex, const PackedAAB
         if (child.isLeaf)
         {
             if (child.index > polyIndex)
-                pairsToCheck.push_back(SPolygonPair(gVars->pWorld->GetPolygon(polyIndex), gVars->pWorld->GetPolygon(child.index)));
+                pairsToCheck.push_back(SPolygonPair(polyIndex, child.index));
         }
         else
             BVH4TraversalRecurse(polyIndex, polyAABBPacked, bvh4Nodes, child.index, pairsToCheck);

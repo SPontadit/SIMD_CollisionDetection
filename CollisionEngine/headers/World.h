@@ -18,22 +18,25 @@ struct SRandomPolyParams
 class CWorld
 {
 public:
-	CPolygonPtr		AddTriangle(float base, float height);
-	CPolygonPtr		AddRectangle(float width, float height);
-	CPolygonPtr		AddRandomRectangle(const SRandomPolyParams& params);
-	CPolygonPtr		AddSquare(float size);
-	CPolygonPtr		AddSymetricPolygon(float radius, size_t sides);
-	CPolygonPtr		AddRandomPoly(const SRandomPolyParams& params);
+	CWorld()
+		: polygons(CPolygon())
+	{
 
-	CPolygonPtr		AddPolygon();
-	void			RemovePolygon(CPolygonPtr poly);
+	}
 
+	size_t			AddRectangle(float width, float height, const Vec2& position);
+	size_t			AddRandomRectangle(const SRandomPolyParams& params);
+
+	size_t			AddPolygon();
+	void			RemovePolygon(size_t index);
+
+	// WARNING
 	template<class TBehavior>
 	CBehaviorPtr	AddBehavior(CPolygonPtr poly)
 	{
 		CBehaviorPtr behavior(new TBehavior());
 		behavior->m_index = m_behaviors.size();
-		behavior->poly = poly;
+		behavior->polyIdx = 0;
 		m_behaviors.push_back(behavior);
 
 		return behavior;
@@ -43,9 +46,10 @@ public:
 	template<typename TFunctor>
 	void	ForEachPolygon(TFunctor functor)
 	{
-		for (CPolygonPtr poly : m_polygons)
+		//for (CPolygonPtr poly : m_polygons)
+		for (size_t i = 0; i < polygons.polyCount; ++i)
 		{
-			functor(poly);
+			functor(i);
 		}
 	}
 	size_t		GetPolygonCount() const;
@@ -63,8 +67,9 @@ public:
 	void Update(float frameTime);
 	void RenderPolygons();
 
+	CPolygon polygons;
 protected:
-	std::vector<CPolygonPtr>	m_polygons;
+	//std::vector<CPolygonPtr>	m_polygons;
 	std::vector<CBehaviorPtr>	m_behaviors;
 };
 

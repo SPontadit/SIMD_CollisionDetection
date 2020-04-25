@@ -196,7 +196,6 @@ Xcopy "$(SolutionDir)Libs\glew\bin\Release\$(Platform)\glew32.dll" "$(OutputPath
     <ClInclude Include="headers\behaviors\DisplayCollision.h" />
     <ClInclude Include="headers\behaviors\PolygonMoverTool.h" />
     <ClInclude Include="headers\behaviors\SimplePolygonBounce.h" />
-    <ClInclude Include="headers\behaviors\SphereSimulation.h" />
     <ClInclude Include="headers\GlobalVariables.h" />
     <ClInclude Include="headers\Maths.h" />
     <ClInclude Include="headers\physics\BroadPhase.h" />
@@ -210,7 +209,6 @@ Xcopy "$(SolutionDir)Libs\glew\bin\Release\$(Platform)\glew32.dll" "$(OutputPath
     <ClInclude Include="headers\scenes\SceneBouncingPolys.h" />
     <ClInclude Include="headers\scenes\SceneDebugCollisions.h" />
     <ClInclude Include="headers\scenes\SceneManager.h" />
-    <ClInclude Include="headers\scenes\SceneSpheres.h" />
     <ClInclude Include="headers\shapes\AABB.h" />
     <ClInclude Include="headers\shapes\Polygon.h" />
     <ClInclude Include="headers\Timer.h" />

@@ -33,7 +33,8 @@ protected:
 		
 		for (size_t i = 0; i < 250; ++i)
 		{
-			gVars->pWorld->AddRandomRectangle(params)->density = 0.0f;
+			//gVars->pWorld->AddRandomRectangle(params)->density = 0.0f;
+			gVars->pWorld->AddRandomRectangle(params);
 		}
 	}
 

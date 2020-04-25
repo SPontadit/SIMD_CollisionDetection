@@ -12,42 +12,52 @@ class CSimplePolygonBounce : public CBehavior
 private:
 	virtual void Update(float frameTime) override
 	{
-		gVars->pPhysicEngine->ForEachCollision([&](const SCollision& collision)
-		{
-			collision.polyA->position += collision.normal * collision.distance * -0.5f;
-			collision.polyB->position += collision.normal * collision.distance * 0.5f;
+		//gVars->pPhysicEngine->ForEachCollision([&](const SCollision& collision)
+		//{
+		//	collision.polyA->position += collision.normal * collision.distance * -0.5f;
+		//	collision.polyB->position += collision.normal * collision.distance * 0.5f;
 
-			collision.polyA->speed.Reflect(collision.normal);
-			collision.polyB->speed.Reflect(collision.normal);
-		});
+		//	collision.polyA->speed.Reflect(collision.normal);
+		//	collision.polyB->speed.Reflect(collision.normal);
+		//});
 
 		float hWidth = gVars->pRenderer->GetWorldWidth() * 0.5f;
 		float hHeight = gVars->pRenderer->GetWorldHeight() * 0.5f;
 
-		gVars->pWorld->ForEachPolygon([&](CPolygonPtr poly)
-		{
-			poly->position += poly->speed * frameTime;
+		CPolygon polygons = gVars->pWorld->polygons;
 
-			if (poly->position.x < -hWidth)
+		gVars->pWorld->ForEachPolygon([&](size_t idx)
+		{
+				Vec2 position = polygons.GetPosition(idx);
+				Vec2 speed = polygons.speed[idx];
+
+			position += speed * frameTime;
+			polygons.SetPosition(idx, position);
+
+			if (position.x < -hWidth)
 			{
-				poly->position.x = -hWidth;
-				poly->speed.x *= -1.0f;
+				position.x = -hWidth;
+				speed.x *= -1.0f;
 			}
-			else if (poly->position.x > hWidth)
+			else if (position.x > hWidth)
 			{
-				poly->position.x = hWidth;
-				poly->speed.x *= -1.0f;
+				position.x = hWidth;
+				speed.x *= -1.0f;
 			}
-			if (poly->position.y < -hHeight)
+
+			if (position.y < -hHeight)
 			{
-				poly->position.y = -hHeight;
-				poly->speed.y *= -1.0f;
+				position.y = -hHeight;
+				speed.y *= -1.0f;
 			}
-			else if (poly->position.y > hHeight)
+			else if (position.y > hHeight)
 			{
-				poly->position.y = hHeight;
-				poly->speed.y *= -1.0f;
+				position.y = hHeight;
+				speed.y *= -1.0f;
 			}
+
+			polygons.SetPosition(idx, position);
+			polygons.speed[idx] = speed;
 		});
 	}
 };
