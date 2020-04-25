@@ -46,8 +46,9 @@ void	CPhysicEngine::DetectCollisions()
 	timer.Stop();
 	if (gVars->bDebug)
 	{
-		gVars->pRenderer->DisplayText("Collision narrowphase duration " + std::to_string(timer.GetDuration() * 1000.0f) + " ms, collisions : " + std::to_string(m_collidingPairs.size()));
+		gVars->pRenderer->DisplayText("Collision narrowphase duration " + std::to_string(timer.GetDuration() * 1000.0f) + " ms");
 	}
+	gVars->pRenderer->DisplayText("collisions: " + std::to_string(m_collidingPairs.size()));
 }
 
 void	CPhysicEngine::Step(float deltaTime)
