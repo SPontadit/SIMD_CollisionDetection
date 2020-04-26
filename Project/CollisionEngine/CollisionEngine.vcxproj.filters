@@ -1,0 +1,160 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Fichiers de ressources">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="Headers">
+      <UniqueIdentifier>{dc7da2a8-1c27-484d-ba3a-675d67485547}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Sources">
+      <UniqueIdentifier>{2b9026f3-0098-4864-99a5-c2adc23899d0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Headers\Scenes">
+      <UniqueIdentifier>{e6509e96-304d-4fc9-8f37-1ab49eb95d38}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Headers\Physics">
+      <UniqueIdentifier>{b3bcef2e-74d9-4d70-8b33-5398af24f621}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Headers\Render">
+      <UniqueIdentifier>{56d88347-404a-451e-81a4-0aae4efe6302}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Headers\Behaviors">
+      <UniqueIdentifier>{f6e33722-6c29-4d9c-808e-ff4129ff6e91}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Sources\Physics">
+      <UniqueIdentifier>{806cd266-c3ed-4814-a6f8-d531050d001d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Sources\Render">
+      <UniqueIdentifier>{f7c9eec6-aa04-4c7e-90c8-e7abeb4f9e33}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Sources\Scenes">
+      <UniqueIdentifier>{5ef54ced-7599-4d41-b13a-f7b548f791d7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Headers\Shapes">
+      <UniqueIdentifier>{d8eaf0bd-821e-4786-b2f3-f5f6722e17c8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Sources\Shapes">
+      <UniqueIdentifier>{e77ff64b-380c-4ad5-80f9-07c6344fd3a2}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="ReadMe.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="headers\Application.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="headers\GlobalVariables.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="headers\Maths.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="headers\Timer.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="headers\World.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="headers\scenes\BaseScene.h">
+      <Filter>Headers\Scenes</Filter>
+    </ClInclude>
+    <ClInclude Include="headers\scenes\SceneBouncingPolys.h">
+      <Filter>Headers\Scenes</Filter>
+    </ClInclude>
+    <ClInclude Include="headers\scenes\SceneDebugCollisions.h">
+      <Filter>Headers\Scenes</Filter>
+    </ClInclude>
+    <ClInclude Include="headers\scenes\SceneManager.h">
+      <Filter>Headers\Scenes</Filter>
+    </ClInclude>
+    <ClInclude Include="headers\render\RenderWindow.h">
+      <Filter>Headers\Render</Filter>
+    </ClInclude>
+    <ClInclude Include="headers\render\SDLRenderWindow.h">
+      <Filter>Headers\Render</Filter>
+    </ClInclude>
+    <ClInclude Include="headers\render\Renderer.h">
+      <Filter>Headers\Render</Filter>
+    </ClInclude>
+    <ClInclude Include="headers\physics\BroadPhase.h">
+      <Filter>Headers\Physics</Filter>
+    </ClInclude>
+    <ClInclude Include="headers\physics\BroadPhaseBrut.h">
+      <Filter>Headers\Physics</Filter>
+    </ClInclude>
+    <ClInclude Include="headers\physics\PhysicEngine.h">
+      <Filter>Headers\Physics</Filter>
+    </ClInclude>
+    <ClInclude Include="headers\behaviors\Behavior.h">
+      <Filter>Headers\Behaviors</Filter>
+    </ClInclude>
+    <ClInclude Include="headers\behaviors\DisplayCollision.h">
+      <Filter>Headers\Behaviors</Filter>
+    </ClInclude>
+    <ClInclude Include="headers\behaviors\PolygonMoverTool.h">
+      <Filter>Headers\Behaviors</Filter>
+    </ClInclude>
+    <ClInclude Include="headers\behaviors\SimplePolygonBounce.h">
+      <Filter>Headers\Behaviors</Filter>
+    </ClInclude>
+    <ClInclude Include="stdafx.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="targetver.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="headers\shapes\Polygon.h">
+      <Filter>Headers\Shapes</Filter>
+    </ClInclude>
+    <ClInclude Include="headers\shapes\AABB.h">
+      <Filter>Headers\Shapes</Filter>
+    </ClInclude>
+    <ClInclude Include="headers\physics\BroadPhaseAABBTree.h">
+      <Filter>Headers\Physics</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="sources\scenes\SceneManager.cpp">
+      <Filter>Sources\Scenes</Filter>
+    </ClCompile>
+    <ClCompile Include="sources\render\Renderer.cpp">
+      <Filter>Sources\Render</Filter>
+    </ClCompile>
+    <ClCompile Include="sources\render\SDLRenderWindow.cpp">
+      <Filter>Sources\Render</Filter>
+    </ClCompile>
+    <ClCompile Include="sources\physics\PhysicEngine.cpp">
+      <Filter>Sources\Physics</Filter>
+    </ClCompile>
+    <ClCompile Include="sources\GlobaleVariables.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="sources\main.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="sources\Maths.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="sources\stdafx.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="sources\Timer.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="sources\World.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="sources\shapes\Polygon.cpp">
+      <Filter>Sources\Shapes</Filter>
+    </ClCompile>
+    <ClCompile Include="sources\shapes\AABB.cpp">
+      <Filter>Sources\Shapes</Filter>
+    </ClCompile>
+    <ClCompile Include="sources\physics\BroadPhaseAABBTree.cpp">
+      <Filter>Sources\Physics</Filter>
+    </ClCompile>
+  </ItemGroup>
+</Project>
