@@ -599,8 +599,6 @@ void	CPhysicEngine::CollisionNarrowPhase()
 		size_t idx1 = pair.polyA;
 		size_t idx2 = pair.polyB;
 
-
-
 		const size_t arrayIdx1 = floor(idx1 / 4);
 		const size_t registerIdx1 = idx1 % 4;
 		const size_t arrayIdx2 = floor(idx2 / 4);
@@ -610,7 +608,6 @@ void	CPhysicEngine::CollisionNarrowPhase()
 		constexpr int mask1 = _MM_SHUFFLE(1, 1, 1, 1);
 		constexpr int mask2 = _MM_SHUFFLE(2, 2, 2, 2);
 		constexpr int mask3 = _MM_SHUFFLE(3, 3, 3, 3);
-		constexpr int mask[4] = { mask0, mask1, mask2, mask3 };
 
 		__m128 pos1, pos2, extent1, extent2;
 		if (registerIdx1 == 0)
