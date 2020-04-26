@@ -1,0 +1,57 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="header">
+      <UniqueIdentifier>{aef23cfc-d0b7-466f-b1ec-30fdef3dee1e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="source">
+      <UniqueIdentifier>{eee1086d-ea80-45a7-b1c7-796b81b683a2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="header\maths">
+      <UniqueIdentifier>{afccec3f-f842-4070-b5f3-34fd7ecf7db5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="source\maths">
+      <UniqueIdentifier>{99b94624-7951-46b5-adc2-a9db7e6af261}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="header\SSE.h">
+      <Filter>header</Filter>
+    </ClInclude>
+    <ClInclude Include="header\maths\Vector3.h">
+      <Filter>header\maths</Filter>
+    </ClInclude>
+    <ClInclude Include="header\maths\Vector4.h">
+      <Filter>header\maths</Filter>
+    </ClInclude>
+    <ClInclude Include="header\maths\Sphere.h">
+      <Filter>header\maths</Filter>
+    </ClInclude>
+    <ClInclude Include="header\maths\Ray.h">
+      <Filter>header\maths</Filter>
+    </ClInclude>
+    <ClInclude Include="header\maths\Vector3Packed.h">
+      <Filter>header\maths</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="source\ASM.cpp">
+      <Filter>source</Filter>
+    </ClCompile>
+    <ClCompile Include="source\maths\Sphere.cpp">
+      <Filter>source\maths</Filter>
+    </ClCompile>
+    <ClCompile Include="source\maths\Vector3Packed.cpp">
+      <Filter>source\maths</Filter>
+    </ClCompile>
+    <ClCompile Include="source\SSE.cpp">
+      <Filter>source</Filter>
+    </ClCompile>
+    <ClCompile Include="source\maths\Vector3.cpp">
+      <Filter>source\maths</Filter>
+    </ClCompile>
+    <ClCompile Include="source\maths\Vector4.cpp">
+      <Filter>source\maths</Filter>
+    </ClCompile>
+  </ItemGroup>
+</Project>
