@@ -13,6 +13,7 @@ Description
   + [Conclusion](#Conclusion)
   + [Going Further](#Going-Further)
   + [References](#References)
++ [Possible Issue](#Possible-Issue)
 
 <br>
 
@@ -67,14 +68,11 @@ We did not take the time to adapt the math structures that came with the base pr
 
 Every polygon is bound by an AABB. We chose a min/max representation for our AABBs over center/half-extent or corner/extent because it is simpler to test in SIMD. Also, for AABBs in world space, we store the opposite of the max value so that we can build the surrounding AABB of two other AABBs using only one min SSE instruction.
 
-<center>
-
 <ins>**Figure 1:**</ins> equivalence between max of maximums and min of -maximums
 
 ![Minus Maximum](README_Resources/MinusMaximum.png)
 
-</center>
-
+<br>
 We have chosen a method for the construction of world space AABBs that works for any polygon because at the time we had not yet decided to work only with OBBs. The first step is to create an AABB in local space for the polygon when it is generated. Then we transform the vertices of this local AABB in the world space, making it an OBB, and build a new AABB that surrounds it. In comparison with building the world space AABB around the polygon vertices transformed into world space, the only drawback of this method is that the resulting bounding volume is not as tight as possible around the geometry. However, it has two important benefits. First, AABBs have a fixed number of vertices that is a multiple of 4 and that is very good for SIMD, a guarantee we don’t have with generic polygons. The second benefit is that the SIMD ‘unfriendly’ code of building the local AABB around a random number of points is executed only once.
 
 After computing all AABBs in world space, we build a two-way BVH out of them. At each step we sort all AABBs along the x and y axes based on their center position. We then split the sorted AABBs in two halves and evaluate the surface area heuristic (SAH) cost for each group. The axis on which the sum of SAH for both sides is minimum will be chosen as the separating axis for this step. We create a BVH node for each half and then recurse by doing the same step on each half. The recursion stops on a list of 1 AABB, where it creates a leaf.
@@ -83,13 +81,9 @@ This two-way BVH is then used to build a four-way BVH, using a top-down algorith
 
 The resulting BVH uses a SoA layout in its nodes, with the AABBs components (x min, x max, y min and y max) packed 4 by 4 inside a PackedAABB structure.
 
-<center>
-
 <ins>**Figure 2:**</ins> data layout for the 4-way BVH node
 
 ![Node Layout](README_Resources/NodeLayout.png)
-
-</center>
 
 
 The final step of the broad phase is testing each polygon’s world AABB against the BVH for potential collision. The polygon’s AABB is expanded into a PackedAABB to be tested against the PackedAABB inside the BVH nodes, therefore it is tested against 4 AABBs at a time.
@@ -100,13 +94,9 @@ The final step of the broad phase is testing each polygon’s world AABB against
 
 At first, we tried to translate the SAT algorithm into SIMD but we quickly realised that it was too ambitious with the time we had for the project. We decided then to only work with OBBs and implement an OBB against OBB overlap test. We translated the algorithm described in Real time Collision Detection by Christer Ericson with a few changes. This test is a version of the SAT algorithm that has been optimized using the properties of rectangles. The algorithm computes and compares projections on the vector base of each polygon. We sum the half projection of the polygons on each axis and compare it to the projection of the translation between their centers. If the projected translation is greater than the sum of the projected polygons, then the axis is separating, and we conclude that the OBBs are not overlapping. If no axis provides such result, then the OBBs are overlapping.
 
-<center>
-
 <ins>**Figure 3:**</ins> an example of SAT test with OBBs
 
 ![OBB Overlap Test](README_Resources/OBB_OverlapTest.png)
-
-</center>
 
 
 Unlike Ericson’s version of the algorithm, we operate in world space instead of the space of one of the polygons and project two extent vectors ((x, y) and (x, -y)) per polygon on the axes of the other to get the maximum projection for the polygon.
@@ -119,13 +109,9 @@ We concentrated our profiling efforts on the narrow phase algorithm. For testing
 
 Our naive SIMD translation of the algorithm ran just a bit faster than the SISD version from Real Time Collision Detection (it is actually optimized into SIMD instructions by the compiler but written as SISD code in C++). We further improved performances by reducing the number of loads to xmm registers and using the shuffle intrinsic to reorganize the data for computation.
 
-<center>
-
 <ins>**Figure 4:**</ins> profiling results for the OBB-OBB overlap test
 
 ![OBB Overlap Profiling](README_Resources/OBB_OverlapProfiling.png)
-
-</center>
 
 
 The SISD function is the implementation without SIMD from Real Time Collision Detection. The SIMD_Set is our first implementation with explicit SIMD that uses a lot of calls to the set intrinsic. SIMD_Set_Shuffle is the version where we reduced the number of calls to the set intrinsic. SIMD_Shuffle is the version where the calls to the set intrinsic are done outside the function, isolating only the shuffles and overlap test. We could not find the time to implement such a complex algorithm with a ‘real’ SIMD approach (testing 2 or 4 pairs at a time).
@@ -161,3 +147,14 @@ The SISD function is the implementation without SIMD from Real Time Collision De
 + Christer Ericson - Real-Time Collision Detection
 + Chapter 4: Bounding Volumes for the OBB-OBB overlap test
 + Chapter 6: Bounding Volume Hierarchies for the BVH construction
+
+<br>
+<br>
+
+### **Possible Issue**
+
+If you do not use Visual Studio 2019 you may encounter the following error on compilation "Element<LanguageStandard> has an invalid calue of "Default"."
+
+To be able to build the project open "Project Property > C/C++ > Language" and erase value in "C++ Language Standard".
+
+![Fixe Error](README_Resources/FixeError.png)
