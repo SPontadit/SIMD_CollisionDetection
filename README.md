@@ -2,9 +2,9 @@
 
 The project's goal was to use **SIMD** to speed up collision detection by using CPU parallelization.
 
-It was develop in two weeks in a group of two people.<br>
+It was developed in two weeks in a group of two people.<br>
 
-## Table of Contents
+## **Table of Contents**
 
 + [How to launch](#How-to-Launch)
 + [Controls](#Controls)
@@ -31,7 +31,7 @@ It was develop in two weeks in a group of two people.<br>
 
 <br>
 
-## Controls
+## **Controls**
 
 + F1: reset current scene
 + F2: go to previous scene
@@ -42,7 +42,7 @@ It was develop in two weeks in a group of two people.<br>
 
 <br>
 
-## Interesting Code
+## **Interesting Code**
 
 Interesting code related to collision detection and SIMD can be found in the following places:
 
@@ -64,7 +64,7 @@ PhysicEngine.cpp -> CPhysicEngine::SIMD_Shuffle_OBBCollisionTest
 
 <br>
 
-## Technical Document
+## **Technical Document**
 
 ### **Introduction**
 
