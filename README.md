@@ -1,6 +1,8 @@
 # SIMD Collision Detection
 
-Description
+The project's goal was to use **SIMD** to speed up collision detection by using CPU parallelization.
+
+It was develop in two weeks in a group of two people.<br>
 
 ## Table of Contents
 
