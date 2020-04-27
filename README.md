@@ -4,6 +4,7 @@ Description
 
 ## Table of Contents
 
++ [How to launch](#How-to-Launch)
 + [Controls](#Controls)
 + [Interesting Code](#Interesting-Code)
 + [Technical Document](#Technical-Document)
@@ -13,7 +14,18 @@ Description
   + [Conclusion](#Conclusion)
   + [Going Further](#Going-Further)
   + [References](#References)
-+ [Possible Issue](#Possible-Issue)
+
+<br>
+
+## **How to Launch**
+
++ ### Run Executable
+
+> Extract "SIMD_CollisionDetection_Binary.rar" archive and run "LuxUmbra.exe"
+
++ ### Compile the project
+
+> Open "SIMD_CollisionDetection.sln" solution file. You may need to retarget the project.<br>Compile and run the project.
 
 <br>
 
@@ -147,14 +159,3 @@ The SISD function is the implementation without SIMD from Real Time Collision De
 + Christer Ericson - Real-Time Collision Detection
 + Chapter 4: Bounding Volumes for the OBB-OBB overlap test
 + Chapter 6: Bounding Volume Hierarchies for the BVH construction
-
-<br>
-<br>
-
-### **Possible Issue**
-
-If you do not use Visual Studio 2019 you may encounter the following error on compilation "Element<LanguageStandard> has an invalid calue of "Default"."
-
-To be able to build the project open "Project Property > C/C++ > Language" and erase value in "C++ Language Standard".
-
-![Fixe Error](README_Resources/FixeError.png)
