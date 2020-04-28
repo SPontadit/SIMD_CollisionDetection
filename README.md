@@ -87,7 +87,7 @@ Every polygon is bound by an AABB. We chose a min/max representation for our AAB
 ![Minus Maximum](README_Resources/MinusMaximum.png)
 
 <br>
-We have chosen a method for the construction of world space AABBs that works for any polygon because at the time we had not yet decided to work only with OBBs. The first step is to create an AABB in local space for the polygon when it is generated. Then we transform the vertices of this local AABB in the world space, making it an OBB, and build a new AABB that surrounds it. 
+We have chosen a method for the construction of world space AABBs that works for any polygon because at the time we had not yet decided to work only with OBBs. The first step is to create an AABB in local space for the polygon when it is generated. Then we transform the vertices of this local AABB in the world space, making it an OBB, and build a new AABB that surrounds it.
 
 In comparison with building the world space AABB around the polygon vertices transformed into world space, the only drawback of this method is that the resulting bounding volume is not as tight as possible around the geometry. However, it has two important benefits. First, AABBs have a fixed number of vertices that is a multiple of 4 and that is very good for SIMD, a guarantee we don’t have with generic polygons. The second benefit is that the SIMD ‘unfriendly’ code of building the local AABB around a random number of points is executed only once.
 
