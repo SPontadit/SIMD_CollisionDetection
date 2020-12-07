@@ -2,7 +2,7 @@
 
 The project's goal was to use **SIMD** to speed up collision detection by using CPU parallelization.
 
-It was developed in two weeks by Matthieu De Laharpe and Stephane Pontadit.<br>
+It was developed in two weeks by Matthieu de Laharpe and Stephane Pontadit.<br>
 
 ## **Table of Contents**
 
