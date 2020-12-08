@@ -1,3 +1,5 @@
+### Stéphane Pontadit & Matthieu de Laharpe
+
 # SIMD Collision Detection
 
 The project's goal was to use **SIMD** to speed up collision detection by using CPU parallelization.
